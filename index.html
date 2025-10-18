@@ -4,10 +4,129 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conjunctions Quest</title>
+    <title>Year 2 Learning Apps</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Nunito", "Baloo 2", "Comic Neue", system-ui, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #ffe082 0%, #ffcc80 30%, #ffab91 70%, #f48fb1 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px 48px;
+        color: #263238;
+      }
+
+      main {
+        width: min(780px, 100%);
+        background: rgba(255, 255, 255, 0.88);
+        border-radius: 28px;
+        padding: 32px clamp(20px, 4vw, 48px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(6px);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.3rem, 5vw, 3.4rem);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: #1a237e;
+      }
+
+      h1 span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: clamp(52px, 10vw, 72px);
+        height: clamp(52px, 10vw, 72px);
+        border-radius: 50%;
+        background: linear-gradient(145deg, #ffd54f, #ff8a65);
+        box-shadow: 0 10px 24px rgba(255, 138, 101, 0.35);
+        font-size: clamp(2.4rem, 6vw, 3.2rem);
+      }
+
+      p {
+        margin: 12px 0 28px;
+        font-size: clamp(1.1rem, 3vw, 1.3rem);
+        color: #37474f;
+      }
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 20px;
+      }
+
+      .app-card {
+        text-decoration: none;
+        display: block;
+        background: linear-gradient(135deg, #a5d6a7, #81d4fa);
+        padding: 22px;
+        border-radius: 22px;
+        color: #0d2334;
+        border: 4px solid transparent;
+        box-shadow: 0 16px 28px rgba(13, 35, 52, 0.15);
+        transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      }
+
+      .app-card:hover,
+      .app-card:focus-visible {
+        transform: translateY(-6px) rotate(-0.8deg);
+        box-shadow: 0 22px 40px rgba(13, 35, 52, 0.28);
+        border-color: rgba(13, 35, 52, 0.3);
+        outline: none;
+      }
+
+      .app-card__title {
+        font-size: clamp(1.4rem, 3.4vw, 1.8rem);
+        font-weight: 800;
+        margin: 0;
+      }
+
+      .app-card__info {
+        margin: 8px 0 0;
+        font-size: clamp(0.95rem, 2.8vw, 1.05rem);
+      }
+
+      footer {
+        margin-top: 28px;
+        font-size: 0.95rem;
+        color: #546e7a;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      footer span {
+        font-size: 1.3rem;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <main>
+      <h1><span>🎒</span>Year 2 Learning Apps</h1>
+      <p>Pick a colourful quest and start learning through play!</p>
+      <ul>
+        <li>
+          <a class="app-card" href="./y2-conjuctions-quest/">
+            <div class="app-card__title">Conjunctions Quest</div>
+            <p class="app-card__info">Team up with Prince Cinders to match the right joining words.</p>
+          </a>
+        </li>
+      </ul>
+      <footer>
+        <span>🌈</span>
+        More adventures coming soon — keep checking back!
+      </footer>
+    </main>
   </body>
 </html>
