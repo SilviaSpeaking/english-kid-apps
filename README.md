@@ -22,7 +22,8 @@ Visit `http://localhost:5173/` for the landing page, or `http://localhost:5173/y
 2. Replace placeholder text inside the copied `index.html`, `App.jsx`, `main.jsx`, and `index.css`.
 3. Register the new HTML file in `vite.config.js` under `build.rollupOptions.input` so it is bundled.
 4. Add a link to the new folder in the root `index.html` so it appears on the landing page.
-5. Run `npm run dev` to preview or `npm run build` to ensure production output succeeds.
+5. Update `public/sitemap.xml` with the new app's deployed URL.
+6. Run `npm run dev` to preview or `npm run build` to ensure production output succeeds.
 
 ## Deploy to GitHub Pages
 ```
