@@ -2,7 +2,7 @@
   "name": "conjunctions-quest",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://SilviaSpeaking.github.io/conjunctions-quest",
+  "homepage": "https://conjunctions.silviaspeaking.com",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
