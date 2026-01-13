@@ -1,0 +1,2656 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Wizard - Learn English Words!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6C63FF;
+            --secondary: #FF6B6B;
+            --success: #4ECB71;
+            --warning: #FFB347;
+            --bg-light: #F8F9FA;
+            --text-dark: #2D3436;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+        }
+
+        .timer-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .timer {
+            background: linear-gradient(135deg, var(--primary), #8B7CF7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer.warning {
+            background: linear-gradient(135deg, var(--warning), #FF8C42);
+        }
+
+        .timer.ended {
+            background: linear-gradient(135deg, var(--secondary), #FF5252);
+        }
+
+        .stars-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1.5rem;
+        }
+
+        .star-count {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--warning);
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            padding: 10px 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-btn.secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-btn.active {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .screen {
+            display: none;
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Home Screen */
+        .welcome-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .category-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border: 3px solid transparent;
+            border-radius: 20px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .category-card.selected {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .category-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .category-count {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Game Screens */
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .game-instruction {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Picture Matching */
+        .match-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .word-display {
+            background: linear-gradient(135deg, var(--primary), #8B7CF7);
+            color: white;
+            padding: 20px 50px;
+            border-radius: 20px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        .pronunciation {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: normal;
+            margin-top: 5px;
+        }
+
+        .picture-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 500px;
+        }
+
+        .picture-card {
+            background: white;
+            border: 4px solid #eee;
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .picture-card:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        .picture-card.correct {
+            border-color: var(--success);
+            background: #E8F5E9;
+            animation: pulse 0.5s ease;
+        }
+
+        .picture-card.wrong {
+            border-color: var(--secondary);
+            background: #FFEBEE;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .picture-emoji {
+            font-size: 4rem;
+        }
+
+        .picture-label {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* Spelling Game */
+        .spelling-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .spelling-clue {
+            background: #FFF3E0;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .letter-slots {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .letter-slot {
+            width: 50px;
+            height: 60px;
+            border: 3px dashed var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: white;
+        }
+
+        .letter-slot.filled {
+            border-style: solid;
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+        }
+
+        .letter-bank {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 400px;
+        }
+
+        .letter-btn {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .letter-btn:hover {
+            transform: scale(1.1);
+            background: #5B52E0;
+        }
+
+        .letter-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .spelling-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Story Mode */
+        .story-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .story-scene {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .story-illustration {
+            font-size: 5rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .story-text {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        .story-highlight {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .story-highlight:hover {
+            background: #5B52E0;
+        }
+
+        .word-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .word-popup.show {
+            display: block;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .popup-overlay.show {
+            display: block;
+        }
+
+        .popup-word {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .popup-pronunciation {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .popup-definition {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .popup-example {
+            background: #F5F5F5;
+            padding: 15px;
+            border-radius: 10px;
+            font-style: italic;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        /* PDF Export Section */
+        .export-section {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .export-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .export-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .export-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .export-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .export-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .export-desc {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Results Screen */
+        .results-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results-emoji {
+            font-size: 6rem;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 2.5rem;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .results-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .stat-box {
+            background: var(--bg-light);
+            padding: 25px 40px;
+            border-radius: 20px;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .words-learned {
+            margin-top: 30px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .words-learned h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .word-chip {
+            display: inline-block;
+            background: var(--bg-light);
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.95rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+
+            .word-display {
+                font-size: 1.8rem;
+                padding: 15px 30px;
+            }
+
+            .picture-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .picture-emoji {
+                font-size: 3rem;
+            }
+
+            .results-stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        /* Speaker button */
+        .speak-btn {
+            background: var(--warning);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .speak-btn:hover {
+            transform: scale(1.1);
+            background: #FF9800;
+        }
+
+        /* Year and Tier Buttons */
+        .year-btn, .tier-btn {
+            padding: 12px 20px;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .year-btn:hover, .tier-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .year-btn.active {
+            background: linear-gradient(135deg, var(--primary), #8B7CF7);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tier-btn.active {
+            background: linear-gradient(135deg, var(--success), #2ECC71);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .year-btn small, .tier-btn small {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        /* Vocabulary List Styles */
+        .vocab-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .vocab-filters select {
+            padding: 10px 15px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .vocab-search {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .vocab-search:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .vocab-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .vocab-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        .vocab-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .vocab-table .word-cell {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .vocab-table .emoji-cell {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .vocab-table .pronunciation-cell {
+            color: #666;
+            font-style: italic;
+        }
+
+        .vocab-table .speak-mini {
+            background: var(--warning);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 8px;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .level-badge.reception { background: #E8F5E9; color: #2E7D32; }
+        .level-badge.year1 { background: #E3F2FD; color: #1565C0; }
+        .level-badge.year2 { background: #FFF3E0; color: #E65100; }
+        .level-badge.year3 { background: #F3E5F5; color: #7B1FA2; }
+        .level-badge.year4 { background: #FFEBEE; color: #C62828; }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .tier-badge.t1 { background: #C8E6C9; color: #2E7D32; }
+        .tier-badge.t2 { background: #BBDEFB; color: #1565C0; }
+        .tier-badge.t3 { background: #FFCDD2; color: #C62828; }
+
+        .word-count-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Print styles */
+        @media print {
+            .header, .nav, .timer-section { display: none; }
+            .screen { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">🧙‍♂️</span>
+            <span>Word Wizard</span>
+        </div>
+        <div class="timer-section">
+            <div class="stars-display">
+                <span>⭐</span>
+                <span class="star-count" id="starCount">0</span>
+            </div>
+            <div class="timer" id="timer">
+                <span>⏱️</span>
+                <span id="timerDisplay">15:00</span>
+            </div>
+            <button class="btn btn-primary" id="startTimerBtn" onclick="toggleTimer()">Start Session</button>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <button class="nav-btn primary active" onclick="showScreen('home')" data-screen="home">
+            🏠 Home
+        </button>
+        <button class="nav-btn secondary" onclick="showScreen('pictureMatch')" data-screen="pictureMatch">
+            🖼️ Picture Match
+        </button>
+        <button class="nav-btn secondary" onclick="showScreen('spelling')" data-screen="spelling">
+            ✏️ Spelling Bee
+        </button>
+        <button class="nav-btn secondary" onclick="showScreen('story')" data-screen="story">
+            📖 Story Time
+        </button>
+        <button class="nav-btn secondary" onclick="showScreen('print')" data-screen="print">
+            🖨️ Print Materials
+        </button>
+        <button class="nav-btn secondary" onclick="showScreen('vocabList')" data-screen="vocabList">
+            📚 Word List
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Screen -->
+        <section class="screen active" id="homeScreen">
+            <h1 class="welcome-title">Welcome to Word Wizard! 🌟</h1>
+
+            <!-- Year Level Selector -->
+            <div class="level-selector" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border-radius: 20px; padding: 25px; margin-bottom: 25px;">
+                <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px;">📚 Choose Your Year Level</h3>
+                <div class="year-buttons" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                    <button class="year-btn active" onclick="selectYearLevel('reception')" data-year="reception">
+                        🎒 Reception<br><small>Ages 4-5</small>
+                    </button>
+                    <button class="year-btn" onclick="selectYearLevel('year1')" data-year="year1">
+                        📖 Year 1<br><small>Ages 5-6</small>
+                    </button>
+                    <button class="year-btn" onclick="selectYearLevel('year2')" data-year="year2">
+                        ✏️ Year 2<br><small>Ages 6-7</small>
+                    </button>
+                    <button class="year-btn" onclick="selectYearLevel('year3')" data-year="year3">
+                        🔬 Year 3<br><small>Ages 7-8</small>
+                    </button>
+                    <button class="year-btn" onclick="selectYearLevel('year4')" data-year="year4">
+                        🎓 Year 4<br><small>Ages 8-9</small>
+                    </button>
+                </div>
+
+                <h4 style="text-align: center; color: #666; margin-bottom: 10px;">Difficulty Level</h4>
+                <div class="tier-buttons" style="display: flex; justify-content: center; gap: 10px;">
+                    <button class="tier-btn" onclick="selectTier(1)" data-tier="1">
+                        🌱 Foundation
+                    </button>
+                    <button class="tier-btn active" onclick="selectTier(2)" data-tier="2">
+                        🌿 Developing
+                    </button>
+                    <button class="tier-btn" onclick="selectTier(3)" data-tier="3">
+                        🌳 Extending
+                    </button>
+                </div>
+                <p id="levelDescription" style="text-align: center; color: #666; margin-top: 15px; font-size: 0.95rem;">
+                    Foundation stage focusing on concrete nouns, simple verbs, and everyday vocabulary.
+                </p>
+            </div>
+
+            <p style="text-align: center; font-size: 1.2rem; color: #666; margin-bottom: 20px;">
+                Choose a category to start learning new words!
+            </p>
+            <div class="category-grid" id="categoryGrid">
+                <!-- Categories will be loaded here -->
+            </div>
+
+            <div class="export-section">
+                <h2 class="export-title">📚 Print & Practice at Home!</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    Download printable materials to practice without the screen
+                </p>
+                <div class="export-options">
+                    <div class="export-card" onclick="showScreen('print')">
+                        <div class="export-icon">🃏</div>
+                        <div class="export-name">Flashcards</div>
+                        <div class="export-desc">Word and picture cards for practice</div>
+                    </div>
+                    <div class="export-card" onclick="showScreen('print')">
+                        <div class="export-icon">📝</div>
+                        <div class="export-name">Activity Sheets</div>
+                        <div class="export-desc">Colouring, tracing, and matching</div>
+                    </div>
+                    <div class="export-card" onclick="showScreen('print')">
+                        <div class="export-icon">🖼️</div>
+                        <div class="export-name">Word Posters</div>
+                        <div class="export-desc">Colourful posters for your wall</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Picture Match Screen -->
+        <section class="screen" id="pictureMatchScreen">
+            <div class="game-header">
+                <h2 class="game-title">🖼️ Picture Match</h2>
+                <p class="game-instruction">Read the clue and find the matching word!</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="matchProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="match-container" id="matchContainer">
+                <!-- Game content will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Spelling Screen -->
+        <section class="screen" id="spellingScreen">
+            <div class="game-header">
+                <h2 class="game-title">✏️ Spelling Bee</h2>
+                <p class="game-instruction">Spell the word using the letters below!</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="spellingProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="spelling-container" id="spellingContainer">
+                <!-- Game content will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Story Screen -->
+        <section class="screen" id="storyScreen">
+            <div class="game-header">
+                <h2 class="game-title">📖 Story Time</h2>
+                <p class="game-instruction">Read the story and tap the highlighted words to learn them!</p>
+            </div>
+            <div class="story-container" id="storyContainer">
+                <!-- Story will be loaded here -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-success" onclick="readStoryAloud()" id="readStoryBtn">🔊 Read Story to Me</button>
+                <button class="btn btn-danger" onclick="stopReading()" id="stopReadingBtn" style="display: none;">⏹️ Stop Reading</button>
+                <button class="btn btn-primary" onclick="loadNewStory()">📖 New Story</button>
+            </div>
+        </section>
+
+        <!-- Print Materials Screen -->
+        <section class="screen" id="printScreen">
+            <div class="game-header">
+                <h2 class="game-title">🖨️ Print Materials</h2>
+                <p class="game-instruction">Download and print learning materials for offline practice!</p>
+            </div>
+
+            <div style="margin-bottom: 30px; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border-radius: 15px; padding: 20px;">
+                <h3 style="margin-bottom: 15px; text-align: center;">📚 Select Words to Print</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center;">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 5px;">Year Level:</label>
+                        <select id="printYearSelect" style="padding: 10px 15px; font-size: 1rem; border-radius: 10px; border: 2px solid var(--primary); min-width: 180px;">
+                            <option value="all">All Years</option>
+                            <option value="reception">Reception (4-5 yrs)</option>
+                            <option value="year1">Year 1 (5-6 yrs)</option>
+                            <option value="year2">Year 2 (6-7 yrs)</option>
+                            <option value="year3">Year 3 (7-8 yrs)</option>
+                            <option value="year4">Year 4 (8-9 yrs)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 5px;">Difficulty:</label>
+                        <select id="printTierSelect" style="padding: 10px 15px; font-size: 1rem; border-radius: 10px; border: 2px solid var(--primary); min-width: 180px;">
+                            <option value="all">All Levels</option>
+                            <option value="1">🌱 Foundation</option>
+                            <option value="2">🌿 Developing</option>
+                            <option value="3">🌳 Extending</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shuffle Option -->
+            <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: #FFF3E0; border-radius: 12px;">
+                <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1rem;">
+                    <input type="checkbox" id="shuffleWords" checked style="width: 20px; height: 20px; cursor: pointer;">
+                    <span>🔀 <strong>Shuffle words</strong> - Mix up the order for fresh revision practice!</span>
+                </label>
+            </div>
+
+            <div class="export-options">
+                <div class="export-card">
+                    <div class="export-icon">🃏</div>
+                    <div class="export-name">Flashcards</div>
+                    <div class="export-desc">Printable word cards with pictures and definitions. Perfect for daily practice!</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="previewFlashcards()" style="background: #E0E0E0; color: #333;">👁️ Preview</button>
+                        <button class="btn btn-primary" onclick="generateFlashcards()">🖨️ Print</button>
+                    </div>
+                </div>
+
+                <div class="export-card">
+                    <div class="export-icon">📝</div>
+                    <div class="export-name">Activity Sheets</div>
+                    <div class="export-desc">Tracing letters, matching games, and fill-in-the-blank exercises.</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="previewActivitySheets()" style="background: #E0E0E0; color: #333;">👁️ Preview</button>
+                        <button class="btn btn-success" onclick="generateActivitySheets()">🖨️ Print</button>
+                    </div>
+                </div>
+
+                <div class="export-card">
+                    <div class="export-icon">🖼️</div>
+                    <div class="export-name">Word Posters</div>
+                    <div class="export-desc">Colourful vocabulary posters to display on walls for passive learning.</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="previewPosters()" style="background: #E0E0E0; color: #333;">👁️ Preview</button>
+                        <button class="btn btn-warning" onclick="generatePosters()">🖨️ Print</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pdfPreview" style="margin-top: 30px; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>📄 Preview</h3>
+                    <button class="btn btn-danger" onclick="closePreview()" style="padding: 8px 16px;">✕ Close Preview</button>
+                </div>
+                <iframe id="pdfFrame" style="width: 100%; height: 600px; border: 3px solid var(--primary); border-radius: 15px; background: white;"></iframe>
+            </div>
+        </section>
+
+        <!-- Results Screen -->
+        <section class="screen" id="resultsScreen">
+            <div class="results-container">
+                <div class="results-emoji">🎉</div>
+                <h2 class="results-title">Fantastic Job!</h2>
+                <div class="results-stats">
+                    <div class="stat-box">
+                        <div class="stat-number" id="correctCount">0</div>
+                        <div class="stat-label">Correct Answers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalStars">0</div>
+                        <div class="stat-label">Stars Earned ⭐</div>
+                    </div>
+                </div>
+                <div class="words-learned">
+                    <h3>Words You Learned Today:</h3>
+                    <div id="learnedWordsList"></div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="showScreen('home')">🏠 Back Home</button>
+                    <button class="btn btn-success" onclick="showScreen('print')">🖨️ Print Practice Sheets</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vocabulary List Screen -->
+        <section class="screen" id="vocabListScreen">
+            <div class="game-header">
+                <h2 class="game-title">📚 Vocabulary Word List</h2>
+                <p class="game-instruction">Browse all words by year level - great for parents and teachers!</p>
+            </div>
+
+            <div class="vocab-filters">
+                <select id="vocabYearFilter" onchange="filterVocabList()">
+                    <option value="all">All Years</option>
+                    <option value="reception">Reception (4-5 yrs)</option>
+                    <option value="year1">Year 1 (5-6 yrs)</option>
+                    <option value="year2">Year 2 (6-7 yrs)</option>
+                    <option value="year3">Year 3 (7-8 yrs)</option>
+                    <option value="year4">Year 4 (8-9 yrs)</option>
+                </select>
+                <select id="vocabTierFilter" onchange="filterVocabList()">
+                    <option value="all">All Levels</option>
+                    <option value="1">🌱 Foundation</option>
+                    <option value="2">🌿 Developing</option>
+                    <option value="3">🌳 Extending</option>
+                </select>
+                <input type="text" class="vocab-search" id="vocabSearch" placeholder="🔍 Search words..." oninput="filterVocabList()">
+                <span class="word-count-badge" id="wordCountBadge">0 words</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="vocab-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"></th>
+                            <th>Word</th>
+                            <th>Definition</th>
+                            <th>Example</th>
+                            <th>Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocabTableBody">
+                        <!-- Words will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Word Popup -->
+    <div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+    <div class="word-popup" id="wordPopup">
+        <div class="popup-word" id="popupWord"></div>
+        <div class="popup-pronunciation" id="popupPronunciation"></div>
+        <div class="popup-definition" id="popupDefinition"></div>
+        <div class="popup-example" id="popupExample"></div>
+        <button class="btn btn-primary" style="margin-top: 20px;" onclick="closePopup()">Got it! 👍</button>
+    </div>
+
+    <!-- Audio element for pronunciation -->
+    <audio id="audioPlayer" style="display: none;"></audio>
+
+    <script>
+        // Vocabulary Data
+        const vocabularyData = {
+            "curriculum": {
+                "categories": [
+                    {
+                        "id": "home",
+                        "name": "Home",
+                        "icon": "🏠",
+                        "words": [
+                            { "word": "kitchen", "definition": "The room in your home where food is cooked and kept", "exampleSentence": "Mum is making dinner in the kitchen.", "pronunciation": "KITCH-en", "difficultyLevel": 1, "emoji": "🍳" },
+                            { "word": "bedroom", "definition": "The room where you sleep and keep your clothes", "exampleSentence": "I have a cosy bedroom with my favourite toys.", "pronunciation": "BED-room", "difficultyLevel": 1, "emoji": "🛏️" },
+                            { "word": "bathroom", "definition": "The room where you wash yourself and brush your teeth", "exampleSentence": "I brush my teeth in the bathroom every morning.", "pronunciation": "BATH-room", "difficultyLevel": 1, "emoji": "🚿" },
+                            { "word": "garden", "definition": "The outdoor space around your home where plants grow", "exampleSentence": "We play football in the garden after school.", "pronunciation": "GAR-den", "difficultyLevel": 1, "emoji": "🌷" },
+                            { "word": "cupboard", "definition": "A piece of furniture with doors where you store things", "exampleSentence": "The cups and plates are kept in the cupboard.", "pronunciation": "CUP-berd", "difficultyLevel": 2, "emoji": "🚪" },
+                            { "word": "curtains", "definition": "Pieces of cloth that hang over windows to block light", "exampleSentence": "Please close the curtains before bedtime.", "pronunciation": "KER-tens", "difficultyLevel": 2, "emoji": "🪟" },
+                            { "word": "chimney", "definition": "A tall pipe on the roof that lets smoke out from a fire", "exampleSentence": "Smoke comes out of the chimney when we light the fire.", "pronunciation": "CHIM-nee", "difficultyLevel": 2, "emoji": "🏭" },
+                            { "word": "stairs", "definition": "Steps inside a building that take you up or down", "exampleSentence": "I climb the stairs to get to my bedroom.", "pronunciation": "STAIRZ", "difficultyLevel": 1, "emoji": "🪜" },
+                            { "word": "furniture", "definition": "Things like chairs, tables, and beds that we use in our homes", "exampleSentence": "We bought new furniture for the living room.", "pronunciation": "FER-ni-cher", "difficultyLevel": 3, "emoji": "🪑" },
+                            { "word": "neighbour", "definition": "A person who lives next door or near your home", "exampleSentence": "Our neighbour has a friendly dog called Biscuit.", "pronunciation": "NAY-ber", "difficultyLevel": 2, "emoji": "👋" }
+                        ]
+                    },
+                    {
+                        "id": "school",
+                        "name": "School",
+                        "icon": "🏫",
+                        "words": [
+                            { "word": "classroom", "definition": "The room at school where you learn with your teacher", "exampleSentence": "Our classroom has colourful posters on the walls.", "pronunciation": "KLASS-room", "difficultyLevel": 1, "emoji": "🎒" },
+                            { "word": "teacher", "definition": "A person who helps you learn new things at school", "exampleSentence": "My teacher reads us stories every afternoon.", "pronunciation": "TEE-cher", "difficultyLevel": 1, "emoji": "👩‍🏫" },
+                            { "word": "pencil", "definition": "A thin stick used for writing and drawing", "exampleSentence": "I sharpened my pencil before the spelling test.", "pronunciation": "PEN-sil", "difficultyLevel": 1, "emoji": "✏️" },
+                            { "word": "rubber", "definition": "A small object used to remove pencil marks from paper", "exampleSentence": "I used my rubber to fix my mistake.", "pronunciation": "RUB-er", "difficultyLevel": 1, "emoji": "🧽" },
+                            { "word": "assembly", "definition": "A meeting where the whole school comes together", "exampleSentence": "We sang songs during morning assembly.", "pronunciation": "uh-SEM-blee", "difficultyLevel": 2, "emoji": "🎤" },
+                            { "word": "playtime", "definition": "The time at school when you can play outside", "exampleSentence": "I love playing with my friends at playtime.", "pronunciation": "PLAY-time", "difficultyLevel": 1, "emoji": "⚽" },
+                            { "word": "homework", "definition": "School work that you do at home", "exampleSentence": "I finished my homework before watching television.", "pronunciation": "HOME-werk", "difficultyLevel": 1, "emoji": "📚" },
+                            { "word": "library", "definition": "A room or building full of books you can read or borrow", "exampleSentence": "I borrowed a book about dinosaurs from the library.", "pronunciation": "LY-brer-ee", "difficultyLevel": 2, "emoji": "📖" },
+                            { "word": "uniform", "definition": "Special clothes that all children at a school wear", "exampleSentence": "Our school uniform is a blue jumper and grey trousers.", "pronunciation": "YOO-ni-form", "difficultyLevel": 2, "emoji": "👔" },
+                            { "word": "lunchbox", "definition": "A container you keep your lunch in at school", "exampleSentence": "Mum packed a sandwich in my lunchbox.", "pronunciation": "LUNCH-box", "difficultyLevel": 1, "emoji": "🍱" }
+                        ]
+                    },
+                    {
+                        "id": "family",
+                        "name": "Family",
+                        "icon": "👨‍👩‍👧‍👦",
+                        "words": [
+                            { "word": "parents", "definition": "Your mum and dad together", "exampleSentence": "My parents take me to the park on Saturdays.", "pronunciation": "PAIR-ents", "difficultyLevel": 1, "emoji": "👫" },
+                            { "word": "grandparents", "definition": "Your mum's or dad's parents - your gran and grandad", "exampleSentence": "We visit our grandparents during the school holidays.", "pronunciation": "GRAND-pair-ents", "difficultyLevel": 2, "emoji": "👴👵" },
+                            { "word": "brother", "definition": "A boy who has the same parents as you", "exampleSentence": "My little brother likes playing with building blocks.", "pronunciation": "BRUH-ther", "difficultyLevel": 1, "emoji": "👦" },
+                            { "word": "sister", "definition": "A girl who has the same parents as you", "exampleSentence": "My sister and I share a bedroom.", "pronunciation": "SIS-ter", "difficultyLevel": 1, "emoji": "👧" },
+                            { "word": "cousin", "definition": "The child of your aunt or uncle", "exampleSentence": "My cousin lives in Manchester and we play together at Christmas.", "pronunciation": "KUZ-in", "difficultyLevel": 2, "emoji": "🤝" },
+                            { "word": "aunt", "definition": "Your mum's or dad's sister, or your uncle's wife", "exampleSentence": "Aunt Sarah always brings me lovely presents.", "pronunciation": "ANT", "difficultyLevel": 1, "emoji": "👩" },
+                            { "word": "uncle", "definition": "Your mum's or dad's brother, or your aunt's husband", "exampleSentence": "Uncle Tom taught me how to ride a bicycle.", "pronunciation": "UN-kul", "difficultyLevel": 1, "emoji": "👨" },
+                            { "word": "toddler", "definition": "A very young child who is just learning to walk", "exampleSentence": "The toddler took her first steps yesterday.", "pronunciation": "TOD-ler", "difficultyLevel": 2, "emoji": "👶" },
+                            { "word": "twins", "definition": "Two children born to the same mother at the same time", "exampleSentence": "The twins in my class look exactly the same.", "pronunciation": "TWINZ", "difficultyLevel": 2, "emoji": "👯" },
+                            { "word": "daughter", "definition": "A female child of a parent", "exampleSentence": "She is the youngest daughter in her family.", "pronunciation": "DAW-ter", "difficultyLevel": 2, "emoji": "👧" }
+                        ]
+                    },
+                    {
+                        "id": "food",
+                        "name": "Food",
+                        "icon": "🍎",
+                        "words": [
+                            { "word": "breakfast", "definition": "The first meal of the day, eaten in the morning", "exampleSentence": "I had toast and cereal for breakfast.", "pronunciation": "BREK-fust", "difficultyLevel": 1, "emoji": "🥣" },
+                            { "word": "lunch", "definition": "The meal you eat in the middle of the day", "exampleSentence": "We have lunch at school at twelve o'clock.", "pronunciation": "LUNCH", "difficultyLevel": 1, "emoji": "🥪" },
+                            { "word": "supper", "definition": "The evening meal, also called dinner or tea", "exampleSentence": "We had fish and chips for supper tonight.", "pronunciation": "SUP-er", "difficultyLevel": 2, "emoji": "🍽️" },
+                            { "word": "biscuit", "definition": "A small, flat, sweet treat that is crunchy", "exampleSentence": "Gran gave me a chocolate biscuit with my milk.", "pronunciation": "BIS-kit", "difficultyLevel": 1, "emoji": "🍪" },
+                            { "word": "vegetables", "definition": "Plants that we eat, like carrots, peas, and broccoli", "exampleSentence": "Eating vegetables helps you grow strong and healthy.", "pronunciation": "VEJ-tuh-bulz", "difficultyLevel": 2, "emoji": "🥕" },
+                            { "word": "delicious", "definition": "Something that tastes really, really good", "exampleSentence": "This cake is absolutely delicious!", "pronunciation": "deh-LISH-us", "difficultyLevel": 2, "emoji": "😋" },
+                            { "word": "hungry", "definition": "The feeling when you need to eat food", "exampleSentence": "I feel hungry after playing in the garden.", "pronunciation": "HUN-gree", "difficultyLevel": 1, "emoji": "🤤" },
+                            { "word": "thirsty", "definition": "The feeling when you need to drink something", "exampleSentence": "Running around made me very thirsty.", "pronunciation": "THERS-tee", "difficultyLevel": 1, "emoji": "💧" },
+                            { "word": "sandwich", "definition": "Food made with two pieces of bread with filling inside", "exampleSentence": "I had a cheese and pickle sandwich for lunch.", "pronunciation": "SAND-wich", "difficultyLevel": 1, "emoji": "🥪" },
+                            { "word": "healthy", "definition": "Good for your body and helps you feel well", "exampleSentence": "Fruit and vegetables are healthy foods.", "pronunciation": "HEL-thee", "difficultyLevel": 2, "emoji": "💪" }
+                        ]
+                    },
+                    {
+                        "id": "clothes",
+                        "name": "Clothes",
+                        "icon": "👕",
+                        "words": [
+                            { "word": "trousers", "definition": "Clothes that cover your legs with a separate part for each leg", "exampleSentence": "I wore my new trousers to the party.", "pronunciation": "TROW-zers", "difficultyLevel": 1, "emoji": "👖" },
+                            { "word": "jumper", "definition": "A warm piece of clothing you pull over your head", "exampleSentence": "Put on your jumper because it's cold outside.", "pronunciation": "JUM-per", "difficultyLevel": 1, "emoji": "🧥" },
+                            { "word": "wellies", "definition": "Waterproof rubber boots for wet weather", "exampleSentence": "I splashed in puddles wearing my red wellies.", "pronunciation": "WEL-eez", "difficultyLevel": 1, "emoji": "🥾" },
+                            { "word": "trainers", "definition": "Comfortable shoes for running and sports", "exampleSentence": "I wear my trainers for PE at school.", "pronunciation": "TRAY-ners", "difficultyLevel": 1, "emoji": "👟" },
+                            { "word": "pyjamas", "definition": "Soft, comfortable clothes you wear to sleep in", "exampleSentence": "I put on my cosy pyjamas before bedtime.", "pronunciation": "puh-JAH-muhz", "difficultyLevel": 2, "emoji": "🩳" },
+                            { "word": "pocket", "definition": "A small bag sewn into clothes for keeping things", "exampleSentence": "I keep my handkerchief in my pocket.", "pronunciation": "POK-it", "difficultyLevel": 1, "emoji": "👛" },
+                            { "word": "button", "definition": "A small round thing used to fasten clothes", "exampleSentence": "Can you help me do up this button?", "pronunciation": "BUT-un", "difficultyLevel": 1, "emoji": "🔘" },
+                            { "word": "sleeve", "definition": "The part of clothing that covers your arm", "exampleSentence": "I rolled up my sleeves to wash my hands.", "pronunciation": "SLEEV", "difficultyLevel": 2, "emoji": "💪" },
+                            { "word": "wardrobe", "definition": "A tall cupboard where you hang and store your clothes", "exampleSentence": "All my dresses are hanging in the wardrobe.", "pronunciation": "WOR-drobe", "difficultyLevel": 2, "emoji": "🚪" },
+                            { "word": "waterproof", "definition": "Something that keeps water out and keeps you dry", "exampleSentence": "My waterproof coat keeps me dry in the rain.", "pronunciation": "WAW-ter-proof", "difficultyLevel": 3, "emoji": "☔" }
+                        ]
+                    },
+                    {
+                        "id": "animals",
+                        "name": "Animals",
+                        "icon": "🐾",
+                        "words": [
+                            { "word": "hedgehog", "definition": "A small animal with spiky prickles on its back", "exampleSentence": "We saw a hedgehog in our garden last night.", "pronunciation": "HEJ-hog", "difficultyLevel": 2, "emoji": "🦔" },
+                            { "word": "squirrel", "definition": "A small furry animal with a bushy tail that climbs trees", "exampleSentence": "The squirrel was collecting acorns in the park.", "pronunciation": "SKWIR-ul", "difficultyLevel": 2, "emoji": "🐿️" },
+                            { "word": "robin", "definition": "A small bird with a red breast often seen in gardens", "exampleSentence": "A robin sat on our fence and sang a pretty song.", "pronunciation": "ROB-in", "difficultyLevel": 1, "emoji": "🐦" },
+                            { "word": "caterpillar", "definition": "A small creature with many legs that turns into a butterfly", "exampleSentence": "We watched the caterpillar eating leaves.", "pronunciation": "KAT-er-pil-er", "difficultyLevel": 2, "emoji": "🐛" },
+                            { "word": "tadpole", "definition": "A baby frog that lives in water and has a tail", "exampleSentence": "We found tadpoles swimming in the pond.", "pronunciation": "TAD-pole", "difficultyLevel": 2, "emoji": "🐸" },
+                            { "word": "feathers", "definition": "The soft, light covering on a bird's body", "exampleSentence": "The peacock has beautiful colourful feathers.", "pronunciation": "FEH-therz", "difficultyLevel": 2, "emoji": "🪶" },
+                            { "word": "whiskers", "definition": "Long stiff hairs that grow on an animal's face", "exampleSentence": "My cat has very long whiskers.", "pronunciation": "WIS-kers", "difficultyLevel": 2, "emoji": "🐱" },
+                            { "word": "habitat", "definition": "The natural home where an animal lives", "exampleSentence": "A pond is the habitat for frogs and fish.", "pronunciation": "HAB-i-tat", "difficultyLevel": 3, "emoji": "🏞️" },
+                            { "word": "hibernate", "definition": "When animals sleep for a very long time during winter", "exampleSentence": "Hedgehogs hibernate during the cold winter months.", "pronunciation": "HY-ber-nayt", "difficultyLevel": 3, "emoji": "😴" },
+                            { "word": "minibeasts", "definition": "Very small creatures like insects, spiders, and snails", "exampleSentence": "We went on a minibeast hunt in the school garden.", "pronunciation": "MIN-ee-beests", "difficultyLevel": 2, "emoji": "🐌" }
+                        ]
+                    },
+                    {
+                        "id": "playground",
+                        "name": "Playground",
+                        "icon": "🎢",
+                        "words": [
+                            { "word": "seesaw", "definition": "A long board balanced in the middle that goes up and down", "exampleSentence": "My friend and I played on the seesaw together.", "pronunciation": "SEE-saw", "difficultyLevel": 1, "emoji": "⚖️" },
+                            { "word": "hopscotch", "definition": "A game where you hop through numbered squares on the ground", "exampleSentence": "We drew hopscotch squares with chalk in the playground.", "pronunciation": "HOP-skotch", "difficultyLevel": 2, "emoji": "🔢" },
+                            { "word": "skipping", "definition": "Jumping over a rope that swings under your feet", "exampleSentence": "The girls were skipping and singing rhymes.", "pronunciation": "SKIP-ing", "difficultyLevel": 1, "emoji": "🏃‍♀️" },
+                            { "word": "conkers", "definition": "A game played with horse chestnuts on strings", "exampleSentence": "In autumn, we collect conkers from under the trees.", "pronunciation": "KON-kers", "difficultyLevel": 2, "emoji": "🌰" },
+                            { "word": "marbles", "definition": "Small glass balls used in playground games", "exampleSentence": "I won three marbles in the game at break time.", "pronunciation": "MAR-bulz", "difficultyLevel": 1, "emoji": "🔮" },
+                            { "word": "exercise", "definition": "Moving your body to keep fit and healthy", "exampleSentence": "Playing outside is good exercise.", "pronunciation": "EK-ser-size", "difficultyLevel": 2, "emoji": "🏋️" },
+                            { "word": "queue", "definition": "A line of people waiting for their turn", "exampleSentence": "We stood in a queue to go on the slide.", "pronunciation": "KYOO", "difficultyLevel": 2, "emoji": "👥" },
+                            { "word": "sandpit", "definition": "A box or area filled with sand for playing in", "exampleSentence": "I built a sandcastle in the sandpit.", "pronunciation": "SAND-pit", "difficultyLevel": 1, "emoji": "🏖️" },
+                            { "word": "balance", "definition": "Keeping steady without falling over", "exampleSentence": "I tried to balance on one leg without wobbling.", "pronunciation": "BAL-uns", "difficultyLevel": 2, "emoji": "🤸" },
+                            { "word": "teamwork", "definition": "Working together with others to do something", "exampleSentence": "We used teamwork to win the relay race.", "pronunciation": "TEEM-werk", "difficultyLevel": 2, "emoji": "🤝" }
+                        ]
+                    },
+                    {
+                        "id": "weather",
+                        "name": "Weather",
+                        "icon": "🌤️",
+                        "words": [
+                            { "word": "drizzle", "definition": "Very light rain with tiny drops", "exampleSentence": "There was a light drizzle when we left school.", "pronunciation": "DRIZ-ul", "difficultyLevel": 2, "emoji": "🌧️" },
+                            { "word": "sunshine", "definition": "The bright light and warmth from the sun", "exampleSentence": "We had lovely sunshine for our picnic.", "pronunciation": "SUN-shine", "difficultyLevel": 1, "emoji": "☀️" },
+                            { "word": "rainbow", "definition": "A colourful arc in the sky that appears after rain", "exampleSentence": "We saw a beautiful rainbow after the storm.", "pronunciation": "RAYN-boh", "difficultyLevel": 1, "emoji": "🌈" },
+                            { "word": "puddle", "definition": "A small pool of water on the ground after rain", "exampleSentence": "I love splashing in puddles with my wellies.", "pronunciation": "PUD-ul", "difficultyLevel": 1, "emoji": "💦" },
+                            { "word": "breeze", "definition": "A gentle, light wind", "exampleSentence": "A cool breeze blew through the open window.", "pronunciation": "BREEZ", "difficultyLevel": 2, "emoji": "🍃" },
+                            { "word": "thunder", "definition": "The loud rumbling noise during a storm", "exampleSentence": "The thunder was so loud it made me jump.", "pronunciation": "THUN-der", "difficultyLevel": 2, "emoji": "⛈️" },
+                            { "word": "lightning", "definition": "A bright flash of light in the sky during a storm", "exampleSentence": "We counted the seconds between lightning and thunder.", "pronunciation": "LYT-ning", "difficultyLevel": 2, "emoji": "⚡" },
+                            { "word": "frost", "definition": "Thin ice that forms on cold surfaces overnight", "exampleSentence": "There was frost on the car windows this morning.", "pronunciation": "FROST", "difficultyLevel": 2, "emoji": "❄️" },
+                            { "word": "season", "definition": "One of the four parts of the year: spring, summer, autumn, winter", "exampleSentence": "Autumn is my favourite season because of the colourful leaves.", "pronunciation": "SEE-zun", "difficultyLevel": 2, "emoji": "🍂" },
+                            { "word": "umbrella", "definition": "A folding cover you hold over your head to stay dry", "exampleSentence": "I shared my umbrella with my friend when it rained.", "pronunciation": "um-BREL-uh", "difficultyLevel": 2, "emoji": "☂️" }
+                        ]
+                    },
+                    {
+                        "id": "body",
+                        "name": "Body Parts",
+                        "icon": "🦵",
+                        "words": [
+                            { "word": "skeleton", "definition": "All the bones inside your body that hold you up", "exampleSentence": "Your skeleton protects your heart and brain.", "pronunciation": "SKEL-eh-ton", "difficultyLevel": 2, "emoji": "💀" },
+                            { "word": "muscles", "definition": "Parts of your body that help you move and lift things", "exampleSentence": "Your muscles get stronger when you exercise.", "pronunciation": "MUS-ulz", "difficultyLevel": 2, "emoji": "💪" },
+                            { "word": "elbow", "definition": "The joint in the middle of your arm that bends", "exampleSentence": "I bumped my elbow on the table and it hurt.", "pronunciation": "EL-boh", "difficultyLevel": 1, "emoji": "🦾" },
+                            { "word": "ankle", "definition": "The joint between your foot and your leg", "exampleSentence": "I twisted my ankle when I jumped off the swing.", "pronunciation": "ANG-kul", "difficultyLevel": 2, "emoji": "🦶" },
+                            { "word": "shoulder", "definition": "The part of your body where your arm joins your body", "exampleSentence": "I carried my bag over my shoulder.", "pronunciation": "SHOHL-der", "difficultyLevel": 2, "emoji": "🤷" },
+                            { "word": "lungs", "definition": "The parts inside your chest that fill with air when you breathe", "exampleSentence": "Take a deep breath to fill your lungs with air.", "pronunciation": "LUNGZ", "difficultyLevel": 2, "emoji": "🫁" },
+                            { "word": "heart", "definition": "The part inside your chest that pumps blood around your body", "exampleSentence": "My heart beats faster when I run.", "pronunciation": "HART", "difficultyLevel": 1, "emoji": "❤️" },
+                            { "word": "brain", "definition": "The part inside your head that controls your body and thinking", "exampleSentence": "Your brain helps you think, learn, and remember things.", "pronunciation": "BRAYN", "difficultyLevel": 2, "emoji": "🧠" },
+                            { "word": "stomach", "definition": "The part inside your body where food goes after you eat", "exampleSentence": "My stomach was rumbling because I was hungry.", "pronunciation": "STUM-uk", "difficultyLevel": 2, "emoji": "🫃" },
+                            { "word": "spine", "definition": "The row of bones down the middle of your back", "exampleSentence": "Sit up straight to look after your spine.", "pronunciation": "SPINE", "difficultyLevel": 3, "emoji": "🦴" }
+                        ]
+                    },
+                    {
+                        "id": "colours_shapes",
+                        "name": "Colours & Shapes",
+                        "icon": "🎨",
+                        "words": [
+                            { "word": "scarlet", "definition": "A bright, vivid red colour", "exampleSentence": "The postbox was painted scarlet red.", "pronunciation": "SKAR-let", "difficultyLevel": 2, "emoji": "🔴" },
+                            { "word": "turquoise", "definition": "A blue-green colour like the sea", "exampleSentence": "The tropical sea was a beautiful turquoise colour.", "pronunciation": "TER-kwoiz", "difficultyLevel": 3, "emoji": "🔵" },
+                            { "word": "triangle", "definition": "A shape with three straight sides and three corners", "exampleSentence": "I cut my sandwich into two triangles.", "pronunciation": "TRY-ang-gul", "difficultyLevel": 1, "emoji": "🔺" },
+                            { "word": "rectangle", "definition": "A shape with four sides and four corners, longer than it is tall", "exampleSentence": "The door is shaped like a rectangle.", "pronunciation": "REK-tang-gul", "difficultyLevel": 2, "emoji": "⬛" },
+                            { "word": "oval", "definition": "A shape like a stretched circle, like an egg", "exampleSentence": "An egg has an oval shape.", "pronunciation": "OH-vul", "difficultyLevel": 2, "emoji": "🥚" },
+                            { "word": "hexagon", "definition": "A shape with six sides", "exampleSentence": "A honeycomb has hexagon shapes.", "pronunciation": "HEK-suh-gon", "difficultyLevel": 3, "emoji": "⬡" },
+                            { "word": "sphere", "definition": "A round 3D shape like a ball", "exampleSentence": "A football is shaped like a sphere.", "pronunciation": "SFEER", "difficultyLevel": 3, "emoji": "⚽" },
+                            { "word": "pattern", "definition": "A design that repeats over and over", "exampleSentence": "My jumper has a stripy pattern.", "pronunciation": "PAT-ern", "difficultyLevel": 2, "emoji": "🔲" },
+                            { "word": "striped", "definition": "Having lines of different colours", "exampleSentence": "Zebras have black and white striped coats.", "pronunciation": "STRYPED", "difficultyLevel": 2, "emoji": "🦓" },
+                            { "word": "spotted", "definition": "Having round dots or marks", "exampleSentence": "The ladybird has a spotted red shell.", "pronunciation": "SPOT-ed", "difficultyLevel": 1, "emoji": "🐞" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Leveled Vocabulary Data (Reception to Year 4)
+        const leveledVocabulary = {
+            levels: [
+                {
+                    id: "reception", name: "Reception", ageRange: "4-5 years",
+                    description: "Foundation stage focusing on concrete nouns, simple verbs, and everyday vocabulary.",
+                    tiers: [
+                        { tier: 1, name: "Foundation", words: [
+                            { word: "cat", definition: "A small furry pet that says meow", exampleSentence: "The cat is sleeping on the sofa.", pronunciation: "kat", emoji: "🐱" },
+                            { word: "dog", definition: "A friendly pet that barks and wags its tail", exampleSentence: "My dog likes to play in the garden.", pronunciation: "dog", emoji: "🐕" },
+                            { word: "mum", definition: "Your mother who looks after you", exampleSentence: "Mum is making my lunch.", pronunciation: "mum", emoji: "👩" },
+                            { word: "dad", definition: "Your father who looks after you", exampleSentence: "Dad reads me a story at bedtime.", pronunciation: "dad", emoji: "👨" },
+                            { word: "bed", definition: "Where you sleep at night", exampleSentence: "I sleep in my cosy bed.", pronunciation: "bed", emoji: "🛏️" },
+                            { word: "sun", definition: "The big bright yellow ball in the sky", exampleSentence: "The sun is shining today.", pronunciation: "sun", emoji: "☀️" },
+                            { word: "cup", definition: "Something you drink from", exampleSentence: "I have milk in my cup.", pronunciation: "kup", emoji: "🥤" },
+                            { word: "run", definition: "To move your legs very fast", exampleSentence: "I like to run in the park.", pronunciation: "run", emoji: "🏃" },
+                            { word: "big", definition: "Something that is not small", exampleSentence: "The elephant is very big.", pronunciation: "big", emoji: "🐘" },
+                            { word: "red", definition: "A bright colour like a fire engine", exampleSentence: "I have a red ball.", pronunciation: "red", emoji: "🔴" }
+                        ]},
+                        { tier: 2, name: "Developing", words: [
+                            { word: "apple", definition: "A round fruit that can be red or green", exampleSentence: "I eat an apple at snack time.", pronunciation: "ap-ul", emoji: "🍎" },
+                            { word: "book", definition: "Something with pages that you read", exampleSentence: "I love reading my book.", pronunciation: "book", emoji: "📚" },
+                            { word: "hand", definition: "The part of your body at the end of your arm", exampleSentence: "I wave my hand to say hello.", pronunciation: "hand", emoji: "✋" },
+                            { word: "rain", definition: "Water that falls from clouds in the sky", exampleSentence: "The rain makes puddles outside.", pronunciation: "rayn", emoji: "🌧️" },
+                            { word: "happy", definition: "When you feel good and want to smile", exampleSentence: "I feel happy when I play with my friends.", pronunciation: "hap-ee", emoji: "😊" },
+                            { word: "jump", definition: "To push yourself up into the air with your legs", exampleSentence: "I can jump very high.", pronunciation: "jump", emoji: "🦘" },
+                            { word: "bird", definition: "An animal with wings and feathers that can fly", exampleSentence: "The bird is singing in the tree.", pronunciation: "burd", emoji: "🐦" },
+                            { word: "shoe", definition: "What you wear on your feet to go outside", exampleSentence: "I put on my shoe before going out.", pronunciation: "shoo", emoji: "👟" },
+                            { word: "blue", definition: "A colour like the sky on a sunny day", exampleSentence: "The sky is blue today.", pronunciation: "bloo", emoji: "🔵" },
+                            { word: "sister", definition: "A girl who has the same parents as you", exampleSentence: "My sister plays with me.", pronunciation: "sis-ter", emoji: "👧" }
+                        ]},
+                        { tier: 3, name: "Extending", words: [
+                            { word: "butterfly", definition: "A pretty insect with colourful wings", exampleSentence: "The butterfly landed on the flower.", pronunciation: "but-er-fly", emoji: "🦋" },
+                            { word: "teacher", definition: "A grown-up who helps you learn at school", exampleSentence: "My teacher reads us stories.", pronunciation: "tee-cher", emoji: "👩‍🏫" },
+                            { word: "garden", definition: "The outdoor space near your house with grass and plants", exampleSentence: "I play in the garden when it is sunny.", pronunciation: "gar-den", emoji: "🌻" },
+                            { word: "brother", definition: "A boy who has the same parents as you", exampleSentence: "My brother is older than me.", pronunciation: "bruh-ther", emoji: "👦" },
+                            { word: "orange", definition: "A round fruit that is the same colour as its name", exampleSentence: "I peeled an orange for my snack.", pronunciation: "or-inj", emoji: "🍊" },
+                            { word: "excited", definition: "A bubbly feeling when something good is going to happen", exampleSentence: "I am excited about my birthday party.", pronunciation: "ek-sy-ted", emoji: "🎉" },
+                            { word: "climb", definition: "To go up something using your hands and feet", exampleSentence: "I can climb on the play frame.", pronunciation: "klym", emoji: "🧗" },
+                            { word: "cloud", definition: "A white fluffy shape in the sky", exampleSentence: "That cloud looks like a rabbit.", pronunciation: "klowd", emoji: "☁️" },
+                            { word: "hungry", definition: "The feeling when your tummy wants food", exampleSentence: "I am hungry for my lunch.", pronunciation: "hun-gree", emoji: "😋" },
+                            { word: "rainbow", definition: "Colourful stripes in the sky after rain", exampleSentence: "I saw a beautiful rainbow today.", pronunciation: "rayn-boh", emoji: "🌈" }
+                        ]}
+                    ]
+                },
+                {
+                    id: "year1", name: "Year 1", ageRange: "5-6 years",
+                    description: "Building on Reception vocabulary with more varied nouns, verbs, and simple adjectives.",
+                    tiers: [
+                        { tier: 1, name: "Foundation", words: [
+                            { word: "pencil", definition: "A tool for writing and drawing", exampleSentence: "I write my name with a pencil.", pronunciation: "pen-sul", emoji: "✏️" },
+                            { word: "rabbit", definition: "A fluffy animal with long ears that hops", exampleSentence: "The rabbit has soft white fur.", pronunciation: "rab-it", emoji: "🐰" },
+                            { word: "sandwich", definition: "Food with bread on both sides and filling in the middle", exampleSentence: "I have a cheese sandwich for lunch.", pronunciation: "sand-wich", emoji: "🥪" },
+                            { word: "friend", definition: "Someone you like to play with", exampleSentence: "My friend and I play together at break time.", pronunciation: "frend", emoji: "🤝" },
+                            { word: "tummy", definition: "The front part of your body below your chest", exampleSentence: "My tummy hurts when I eat too much.", pronunciation: "tum-ee", emoji: "🫃" },
+                            { word: "windy", definition: "When the air moves fast outside", exampleSentence: "It is windy today so hold onto your hat.", pronunciation: "win-dee", emoji: "💨" },
+                            { word: "walk", definition: "To move using your legs, slower than running", exampleSentence: "We walk to school every morning.", pronunciation: "wawk", emoji: "🚶" },
+                            { word: "scared", definition: "A worried feeling when something frightens you", exampleSentence: "I felt scared during the thunderstorm.", pronunciation: "skaird", emoji: "😨" },
+                            { word: "soft", definition: "Something that feels nice and gentle when you touch it", exampleSentence: "My teddy bear is very soft.", pronunciation: "soft", emoji: "🧸" },
+                            { word: "table", definition: "A piece of furniture with legs and a flat top", exampleSentence: "We eat dinner at the table.", pronunciation: "tay-bul", emoji: "🪑" },
+                            { word: "grandma", definition: "Your mum or dad's mother", exampleSentence: "Grandma bakes delicious biscuits.", pronunciation: "gran-mah", emoji: "👵" },
+                            { word: "fish", definition: "An animal that lives in water and has fins", exampleSentence: "The fish swims in the pond.", pronunciation: "fish", emoji: "🐟" },
+                            { word: "banana", definition: "A long yellow fruit that you peel", exampleSentence: "Monkeys love to eat bananas.", pronunciation: "buh-nah-nuh", emoji: "🍌" }
+                        ]},
+                        { tier: 2, name: "Developing", words: [
+                            { word: "library", definition: "A place with lots of books you can borrow", exampleSentence: "We visit the library to choose new books.", pronunciation: "ly-bruh-ree", emoji: "📖" },
+                            { word: "elephant", definition: "A very large grey animal with a long trunk", exampleSentence: "The elephant sprayed water with its trunk.", pronunciation: "el-uh-funt", emoji: "🐘" },
+                            { word: "breakfast", definition: "The first meal you eat in the morning", exampleSentence: "I have cereal for breakfast.", pronunciation: "brek-fust", emoji: "🥣" },
+                            { word: "playground", definition: "An outdoor area at school where you can play", exampleSentence: "We play on the swings in the playground.", pronunciation: "play-grownd", emoji: "🛝" },
+                            { word: "shoulder", definition: "The part of your body between your neck and arm", exampleSentence: "I carry my bag on my shoulder.", pronunciation: "shohl-der", emoji: "💪" },
+                            { word: "snowy", definition: "When white, cold snow covers the ground", exampleSentence: "It was snowy so we built a snowman.", pronunciation: "snoh-ee", emoji: "❄️" },
+                            { word: "throw", definition: "To send something through the air using your arm", exampleSentence: "I throw the ball to my friend.", pronunciation: "throh", emoji: "🤾" },
+                            { word: "worried", definition: "When you feel uneasy about something", exampleSentence: "I was worried about my lost toy.", pronunciation: "wur-eed", emoji: "😟" },
+                            { word: "beautiful", definition: "Something that is very pretty to look at", exampleSentence: "The flowers in the garden are beautiful.", pronunciation: "byoo-ti-ful", emoji: "🌸" },
+                            { word: "cousin", definition: "The child of your aunt or uncle", exampleSentence: "My cousin comes to visit at Christmas.", pronunciation: "kuz-in", emoji: "👨‍👩‍👧" },
+                            { word: "carrot", definition: "An orange vegetable that grows under the ground", exampleSentence: "Rabbits love to eat carrots.", pronunciation: "ka-rut", emoji: "🥕" },
+                            { word: "penguin", definition: "A black and white bird that cannot fly but can swim", exampleSentence: "The penguin waddled across the ice.", pronunciation: "pen-gwin", emoji: "🐧" },
+                            { word: "bedroom", definition: "The room in your house where you sleep", exampleSentence: "My toys are in my bedroom.", pronunciation: "bed-room", emoji: "🛏️" }
+                        ]},
+                        { tier: 3, name: "Extending", words: [
+                            { word: "adventure", definition: "An exciting journey or experience", exampleSentence: "We went on an adventure in the woods.", pronunciation: "ad-ven-cher", emoji: "🗺️" },
+                            { word: "dinosaur", definition: "A very large animal that lived millions of years ago", exampleSentence: "The dinosaur skeleton is in the museum.", pronunciation: "dy-nuh-sor", emoji: "🦕" },
+                            { word: "vegetable", definition: "Healthy food that grows from plants", exampleSentence: "We grow vegetables in our school garden.", pronunciation: "vej-tuh-bul", emoji: "🥦" },
+                            { word: "assembly", definition: "When the whole school meets together", exampleSentence: "We sing songs in assembly.", pronunciation: "uh-sem-blee", emoji: "🏫" },
+                            { word: "stomach", definition: "The part inside your body where food goes", exampleSentence: "Food goes to my stomach when I eat.", pronunciation: "stum-uk", emoji: "🫄" },
+                            { word: "thunder", definition: "The loud rumbling sound during a storm", exampleSentence: "The thunder made a big booming sound.", pronunciation: "thun-der", emoji: "⛈️" },
+                            { word: "whisper", definition: "To speak very quietly", exampleSentence: "We whisper in the library.", pronunciation: "wis-per", emoji: "🤫" },
+                            { word: "jealous", definition: "Feeling unhappy because someone has something you want", exampleSentence: "I felt jealous of my friend's new toy.", pronunciation: "jel-us", emoji: "😒" },
+                            { word: "enormous", definition: "Very, very big", exampleSentence: "The giant had enormous feet.", pronunciation: "ee-nor-mus", emoji: "🦣" },
+                            { word: "neighbourhood", definition: "The area around where you live", exampleSentence: "There is a park in my neighbourhood.", pronunciation: "nay-ber-hood", emoji: "🏘️" },
+                            { word: "dolphin", definition: "A clever sea animal that jumps out of water", exampleSentence: "The dolphin did a flip in the air.", pronunciation: "dol-fin", emoji: "🐬" },
+                            { word: "delicious", definition: "Something that tastes very good", exampleSentence: "The cake was absolutely delicious.", pronunciation: "duh-lish-us", emoji: "😋" },
+                            { word: "discover", definition: "To find something new or learn something for the first time", exampleSentence: "I discovered a ladybird in the garden.", pronunciation: "dis-kuv-er", emoji: "🔍" }
+                        ]}
+                    ]
+                },
+                {
+                    id: "year2", name: "Year 2", ageRange: "6-7 years",
+                    description: "Expanding vocabulary with more complex nouns, verbs, adjectives, and introducing adverbs.",
+                    tiers: [
+                        { tier: 1, name: "Foundation", words: [
+                            { word: "scissors", definition: "A tool with two blades for cutting paper", exampleSentence: "I use scissors to cut out shapes.", pronunciation: "siz-erz", emoji: "✂️" },
+                            { word: "hedgehog", definition: "A small animal with prickly spines on its back", exampleSentence: "The hedgehog curled into a ball.", pronunciation: "hej-hog", emoji: "🦔" },
+                            { word: "spaghetti", definition: "Long thin pasta that you eat with sauce", exampleSentence: "We had spaghetti for dinner last night.", pronunciation: "spuh-get-ee", emoji: "🍝" },
+                            { word: "relative", definition: "A person in your family", exampleSentence: "All my relatives came to my party.", pronunciation: "rel-uh-tiv", emoji: "👨‍👩‍👧‍👦" },
+                            { word: "ankle", definition: "The joint between your foot and your leg", exampleSentence: "I twisted my ankle when I fell over.", pronunciation: "ang-kul", emoji: "🦶" },
+                            { word: "foggy", definition: "When thick mist makes it hard to see", exampleSentence: "It was so foggy I could not see the end of the garden.", pronunciation: "fog-ee", emoji: "🌫️" },
+                            { word: "collect", definition: "To gather things together", exampleSentence: "I collect stickers in my album.", pronunciation: "kuh-lekt", emoji: "📁" },
+                            { word: "proud", definition: "Feeling pleased about something you have done well", exampleSentence: "I felt proud when I got a star.", pronunciation: "prowd", emoji: "🌟" },
+                            { word: "narrow", definition: "Not very wide", exampleSentence: "The path was too narrow for two people.", pronunciation: "na-roh", emoji: "↔️" },
+                            { word: "cupboard", definition: "A piece of furniture with doors for storing things", exampleSentence: "The cups are in the cupboard.", pronunciation: "kub-erd", emoji: "🗄️" },
+                            { word: "squirrel", definition: "A small animal with a bushy tail that climbs trees", exampleSentence: "The squirrel buried acorns in the garden.", pronunciation: "skwir-ul", emoji: "🐿️" },
+                            { word: "biscuit", definition: "A small flat baked treat, often sweet", exampleSentence: "I had a chocolate biscuit with my milk.", pronunciation: "bis-kit", emoji: "🍪" }
+                        ]},
+                        { tier: 2, name: "Developing", words: [
+                            { word: "instrument", definition: "Something you play to make music", exampleSentence: "The piano is my favourite instrument.", pronunciation: "in-struh-ment", emoji: "🎸" },
+                            { word: "crocodile", definition: "A large reptile with sharp teeth that lives in water", exampleSentence: "The crocodile lay still in the river.", pronunciation: "krok-uh-dyl", emoji: "🐊" },
+                            { word: "restaurant", definition: "A place where you go to buy and eat meals", exampleSentence: "We went to a restaurant for Mum's birthday.", pronunciation: "rest-er-ont", emoji: "🍽️" },
+                            { word: "neighbour", definition: "Someone who lives near your house", exampleSentence: "Our neighbour has a friendly dog.", pronunciation: "nay-ber", emoji: "🏠" },
+                            { word: "skeleton", definition: "All the bones inside your body", exampleSentence: "Your skeleton helps you stand up straight.", pronunciation: "skel-uh-ton", emoji: "💀" },
+                            { word: "temperature", definition: "How hot or cold something is", exampleSentence: "The temperature dropped and it started to snow.", pronunciation: "tem-pruh-cher", emoji: "🌡️" },
+                            { word: "disappointed", definition: "Feeling sad because something did not happen the way you wanted", exampleSentence: "I was disappointed when the trip was cancelled.", pronunciation: "dis-uh-poin-ted", emoji: "😞" },
+                            { word: "sparkling", definition: "Shining with lots of little lights", exampleSentence: "The sparkling stars filled the night sky.", pronunciation: "spar-kling", emoji: "✨" },
+                            { word: "equipment", definition: "Tools or items you need for an activity", exampleSentence: "We got out the PE equipment for sports day.", pronunciation: "ee-kwip-ment", emoji: "🎽" },
+                            { word: "tortoise", definition: "A slow-moving animal with a hard shell", exampleSentence: "The tortoise moved slowly across the garden.", pronunciation: "tor-tus", emoji: "🐢" },
+                            { word: "strawberry", definition: "A small red fruit with seeds on the outside", exampleSentence: "I picked a ripe strawberry from the plant.", pronunciation: "straw-bree", emoji: "🍓" },
+                            { word: "relieved", definition: "Feeling happy that something worrying is over", exampleSentence: "I was relieved when I found my lost bag.", pronunciation: "rih-leevd", emoji: "😌" }
+                        ]},
+                        { tier: 3, name: "Extending", words: [
+                            { word: "dictionary", definition: "A book that tells you what words mean", exampleSentence: "I looked up the word in the dictionary.", pronunciation: "dik-shun-ree", emoji: "📕" },
+                            { word: "chameleon", definition: "A lizard that can change the colour of its skin", exampleSentence: "The chameleon turned green to match the leaves.", pronunciation: "kuh-meel-yun", emoji: "🦎" },
+                            { word: "ingredient", definition: "Something you put into food when cooking", exampleSentence: "Flour is an important ingredient in bread.", pronunciation: "in-gree-dee-ent", emoji: "🥚" },
+                            { word: "generation", definition: "All the people born around the same time", exampleSentence: "Grandma is from a different generation.", pronunciation: "jen-er-ay-shun", emoji: "👨‍👩‍👧‍👦" },
+                            { word: "muscle", definition: "A part of your body that helps you move", exampleSentence: "You use your muscles when you lift things.", pronunciation: "mus-ul", emoji: "💪" },
+                            { word: "hurricane", definition: "A very strong storm with powerful winds", exampleSentence: "The hurricane blew down many trees.", pronunciation: "hur-ih-kayn", emoji: "🌀" },
+                            { word: "investigate", definition: "To look carefully at something to find out more", exampleSentence: "We will investigate what happens when ice melts.", pronunciation: "in-ves-ti-gayt", emoji: "🔎" },
+                            { word: "embarrassed", definition: "Feeling awkward or shy about something", exampleSentence: "I felt embarrassed when I tripped over.", pronunciation: "em-ba-rast", emoji: "😳" },
+                            { word: "tremendous", definition: "Very great or very good", exampleSentence: "You have made tremendous progress this year.", pronunciation: "truh-men-dus", emoji: "🏆" },
+                            { word: "extraordinary", definition: "Very unusual and special", exampleSentence: "The magician did an extraordinary trick.", pronunciation: "ek-stror-din-ree", emoji: "🎩" },
+                            { word: "communicate", definition: "To share information or ideas with others", exampleSentence: "We communicate by talking and writing.", pronunciation: "kuh-myoo-nih-kayt", emoji: "💬" },
+                            { word: "curious", definition: "Wanting to know or learn about something", exampleSentence: "I am curious about how aeroplanes fly.", pronunciation: "kyoor-ee-us", emoji: "🤔" }
+                        ]}
+                    ]
+                },
+                {
+                    id: "year3", name: "Year 3", ageRange: "7-8 years",
+                    description: "Developing a richer vocabulary with more abstract concepts and varied verbs.",
+                    tiers: [
+                        { tier: 1, name: "Foundation", words: [
+                            { word: "compass", definition: "A tool that shows you which direction is north", exampleSentence: "We used a compass to find our way.", pronunciation: "kum-pus", emoji: "🧭" },
+                            { word: "badger", definition: "A black and white animal that lives underground", exampleSentence: "The badger came out of its sett at night.", pronunciation: "baj-er", emoji: "🦡" },
+                            { word: "nutritious", definition: "Food that is good for your body and health", exampleSentence: "Fruit and vegetables are nutritious foods.", pronunciation: "new-trish-us", emoji: "🥗" },
+                            { word: "ancestor", definition: "A family member who lived long ago", exampleSentence: "My ancestors came from Ireland.", pronunciation: "an-ses-ter", emoji: "👴" },
+                            { word: "organ", definition: "An important part inside your body like your heart", exampleSentence: "The heart is a vital organ.", pronunciation: "or-gun", emoji: "❤️" },
+                            { word: "climate", definition: "The usual weather in a place over a long time", exampleSentence: "The climate in Britain is often rainy.", pronunciation: "kly-mut", emoji: "🌍" },
+                            { word: "observe", definition: "To watch something carefully", exampleSentence: "We observe the plants as they grow.", pronunciation: "ob-zerv", emoji: "👁️" },
+                            { word: "frustrated", definition: "Feeling annoyed when things do not work out", exampleSentence: "I felt frustrated when I could not solve the puzzle.", pronunciation: "frus-tray-ted", emoji: "😤" },
+                            { word: "ancient", definition: "Very, very old, from long ago", exampleSentence: "The ancient Egyptians built the pyramids.", pronunciation: "ayn-shent", emoji: "🏛️" },
+                            { word: "binoculars", definition: "A tool you look through to see things far away", exampleSentence: "I used binoculars to watch the birds.", pronunciation: "bin-ok-yoo-lerz", emoji: "🔭" }
+                        ]},
+                        { tier: 2, name: "Developing", words: [
+                            { word: "microscope", definition: "A tool that makes tiny things look bigger", exampleSentence: "We looked at a leaf cell under the microscope.", pronunciation: "my-kroh-skohp", emoji: "🔬" },
+                            { word: "carnivore", definition: "An animal that only eats meat", exampleSentence: "A lion is a carnivore.", pronunciation: "kar-nih-vor", emoji: "🦁" },
+                            { word: "appetite", definition: "The feeling of wanting to eat food", exampleSentence: "After swimming, I had a big appetite.", pronunciation: "ap-uh-tyt", emoji: "🍽️" },
+                            { word: "descendant", definition: "A person related to someone who lived in the past", exampleSentence: "She is a descendant of a famous explorer.", pronunciation: "dih-sen-dunt", emoji: "👨‍👧" },
+                            { word: "atmosphere", definition: "The air that surrounds the Earth", exampleSentence: "The atmosphere protects us from the sun.", pronunciation: "at-mus-feer", emoji: "🌎" },
+                            { word: "examine", definition: "To look at something very carefully", exampleSentence: "The scientist will examine the fossils.", pronunciation: "ig-zam-in", emoji: "🧐" },
+                            { word: "sympathetic", definition: "Understanding and caring about someone's feelings", exampleSentence: "My friend was sympathetic when I was upset.", pronunciation: "sim-puh-thet-ik", emoji: "🤗" },
+                            { word: "spectacular", definition: "Very impressive and exciting to see", exampleSentence: "The fireworks display was spectacular.", pronunciation: "spek-tak-yoo-ler", emoji: "🎆" },
+                            { word: "herbivore", definition: "An animal that only eats plants", exampleSentence: "A rabbit is a herbivore.", pronunciation: "her-bih-vor", emoji: "🐰" },
+                            { word: "protein", definition: "A substance in food that helps your body grow strong", exampleSentence: "Eggs and beans contain protein.", pronunciation: "proh-teen", emoji: "🥚" }
+                        ]},
+                        { tier: 3, name: "Extending", words: [
+                            { word: "apparatus", definition: "Equipment used for a particular purpose", exampleSentence: "We set up the apparatus for our science experiment.", pronunciation: "ap-uh-ray-tus", emoji: "⚗️" },
+                            { word: "amphibian", definition: "An animal that can live on land and in water", exampleSentence: "A frog is an amphibian.", pronunciation: "am-fib-ee-un", emoji: "🐸" },
+                            { word: "heritage", definition: "Traditions and history passed down through families", exampleSentence: "We learned about our cultural heritage.", pronunciation: "her-ih-tij", emoji: "🏛️" },
+                            { word: "circulation", definition: "The movement of blood around your body", exampleSentence: "Exercise helps improve circulation.", pronunciation: "ser-kyoo-lay-shun", emoji: "💓" },
+                            { word: "evaporate", definition: "When a liquid turns into a gas", exampleSentence: "Puddles evaporate in the sunshine.", pronunciation: "ih-vap-oh-rayt", emoji: "💨" },
+                            { word: "experiment", definition: "A test to find out if something is true", exampleSentence: "Our experiment showed that plants need light.", pronunciation: "ek-sper-ih-ment", emoji: "🧪" },
+                            { word: "compassionate", definition: "Showing kindness and care for others", exampleSentence: "She is compassionate towards animals.", pronunciation: "kum-pash-un-ut", emoji: "💕" },
+                            { word: "predator", definition: "An animal that hunts and eats other animals", exampleSentence: "The hawk is a predator that catches mice.", pronunciation: "pred-uh-ter", emoji: "🦅" },
+                            { word: "precipitation", definition: "Water that falls from clouds as rain, snow, or hail", exampleSentence: "There was heavy precipitation last night.", pronunciation: "prih-sip-ih-tay-shun", emoji: "🌧️" },
+                            { word: "immediately", definition: "Right now, without any delay", exampleSentence: "Please come here immediately.", pronunciation: "ih-mee-dee-ut-lee", emoji: "⏰" }
+                        ]}
+                    ]
+                },
+                {
+                    id: "year4", name: "Year 4", ageRange: "8-9 years",
+                    description: "Consolidating vocabulary with sophisticated words, abstract concepts, and subject-specific terminology.",
+                    tiers: [
+                        { tier: 1, name: "Foundation", words: [
+                            { word: "protractor", definition: "A tool shaped like a half circle for measuring angles", exampleSentence: "I used a protractor to measure the angle.", pronunciation: "proh-trak-ter", emoji: "📐" },
+                            { word: "nocturnal", definition: "Active at night rather than during the day", exampleSentence: "Owls are nocturnal birds.", pronunciation: "nok-ter-nul", emoji: "🦉" },
+                            { word: "carbohydrate", definition: "A substance in food that gives you energy", exampleSentence: "Bread and pasta contain carbohydrates.", pronunciation: "kar-boh-hy-drayt", emoji: "🍞" },
+                            { word: "community", definition: "A group of people who live or work together", exampleSentence: "Our community organised a summer fair.", pronunciation: "kuh-myoo-nih-tee", emoji: "🏘️" },
+                            { word: "intestine", definition: "A long tube inside your body that digests food", exampleSentence: "Food passes through your intestine.", pronunciation: "in-tes-tin", emoji: "🫃" },
+                            { word: "humidity", definition: "The amount of water vapour in the air", exampleSentence: "The humidity made the air feel sticky.", pronunciation: "hyoo-mid-ih-tee", emoji: "💧" },
+                            { word: "recommend", definition: "To suggest something because you think it is good", exampleSentence: "I recommend this book to all my friends.", pronunciation: "rek-uh-mend", emoji: "👍" },
+                            { word: "apprehensive", definition: "Worried about something that might happen", exampleSentence: "I felt apprehensive before my audition.", pronunciation: "ap-rih-hen-siv", emoji: "😟" },
+                            { word: "courageous", definition: "Brave and not afraid of danger", exampleSentence: "The firefighter was very courageous.", pronunciation: "kuh-ray-jus", emoji: "🦸" },
+                            { word: "mammal", definition: "A warm-blooded animal that feeds milk to its young", exampleSentence: "A whale is a mammal, not a fish.", pronunciation: "mam-ul", emoji: "🐋" }
+                        ]},
+                        { tier: 2, name: "Developing", words: [
+                            { word: "hypothesis", definition: "An idea that you test to see if it is true", exampleSentence: "Our hypothesis was that plants grow towards light.", pronunciation: "hy-poth-uh-sis", emoji: "💡" },
+                            { word: "ecosystem", definition: "All the living things in an area and how they interact", exampleSentence: "A pond is a small ecosystem.", pronunciation: "ee-koh-sis-tum", emoji: "🌿" },
+                            { word: "digestion", definition: "The process of breaking down food in your body", exampleSentence: "Digestion begins in your mouth.", pronunciation: "dy-jes-chun", emoji: "🍽️" },
+                            { word: "civilisation", definition: "A society with its own culture, laws, and way of life", exampleSentence: "The Roman civilisation built many roads.", pronunciation: "siv-il-eye-zay-shun", emoji: "🏛️" },
+                            { word: "respiratory", definition: "To do with breathing and the lungs", exampleSentence: "The respiratory system helps us breathe.", pronunciation: "res-pir-uh-tree", emoji: "🫁" },
+                            { word: "condensation", definition: "When water vapour turns into liquid water", exampleSentence: "Condensation forms on cold windows.", pronunciation: "kon-den-say-shun", emoji: "💦" },
+                            { word: "collaborate", definition: "To work together with others on something", exampleSentence: "We will collaborate on the group project.", pronunciation: "kuh-lab-oh-rayt", emoji: "🤝" },
+                            { word: "exasperated", definition: "Feeling very annoyed and frustrated", exampleSentence: "The teacher was exasperated by the noise.", pronunciation: "ig-zas-per-ay-ted", emoji: "😩" },
+                            { word: "essential", definition: "Absolutely necessary or very important", exampleSentence: "Water is essential for life.", pronunciation: "eh-sen-shul", emoji: "💧" },
+                            { word: "invertebrate", definition: "An animal without a backbone", exampleSentence: "A snail is an invertebrate.", pronunciation: "in-ver-tuh-brut", emoji: "🐌" }
+                        ]},
+                        { tier: 3, name: "Extending", words: [
+                            { word: "equation", definition: "A mathematical statement showing two things are equal", exampleSentence: "I solved the equation to find the answer.", pronunciation: "ih-kway-zhun", emoji: "➕" },
+                            { word: "biodiversity", definition: "The variety of different plants and animals in an area", exampleSentence: "Rainforests have high biodiversity.", pronunciation: "by-oh-dy-ver-sih-tee", emoji: "🌴" },
+                            { word: "metabolism", definition: "How your body turns food into energy", exampleSentence: "Exercise can speed up your metabolism.", pronunciation: "muh-tab-oh-liz-um", emoji: "⚡" },
+                            { word: "parliament", definition: "The group of people who make laws for a country", exampleSentence: "Parliament meets in the Houses of Parliament.", pronunciation: "par-luh-ment", emoji: "🏛️" },
+                            { word: "cardiovascular", definition: "To do with the heart and blood vessels", exampleSentence: "Running is good for cardiovascular health.", pronunciation: "kar-dee-oh-vas-kyoo-ler", emoji: "❤️" },
+                            { word: "photosynthesis", definition: "How plants make food using sunlight", exampleSentence: "Plants use photosynthesis to make energy.", pronunciation: "foh-toh-sin-thuh-sis", emoji: "🌱" },
+                            { word: "negotiate", definition: "To discuss something to reach an agreement", exampleSentence: "We had to negotiate to share the toys fairly.", pronunciation: "nih-goh-shee-ayt", emoji: "🤝" },
+                            { word: "melancholy", definition: "A feeling of thoughtful sadness", exampleSentence: "The music had a melancholy sound.", pronunciation: "mel-un-kol-ee", emoji: "😢" },
+                            { word: "phenomenon", definition: "Something unusual or interesting that happens", exampleSentence: "A rainbow is a natural phenomenon.", pronunciation: "fuh-nom-uh-non", emoji: "🌈" },
+                            { word: "chronological", definition: "Arranged in the order that events happened", exampleSentence: "We put the events in chronological order.", pronunciation: "kron-oh-loj-ik-ul", emoji: "📅" }
+                        ]}
+                    ]
+                }
+            ]
+        };
+
+        // Game State
+        let gameState = {
+            stars: 0,
+            currentCategory: null,
+            currentWordIndex: 0,
+            correctAnswers: 0,
+            wordsLearned: [],
+            timerRunning: false,
+            timeRemaining: 15 * 60, // 15 minutes
+            timerInterval: null,
+            selectedCategories: [],
+            currentYearLevel: 'reception',
+            currentTier: 2
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();
+            updateLevelDescription();
+        });
+
+        // Year Level Selection
+        function selectYearLevel(yearId) {
+            gameState.currentYearLevel = yearId;
+
+            // Update button styles
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-year="${yearId}"]`).classList.add('active');
+
+            // Update description and reload vocabulary
+            updateLevelDescription();
+            updateCurrentVocabulary();
+        }
+
+        function selectTier(tier) {
+            gameState.currentTier = tier;
+
+            // Update button styles
+            document.querySelectorAll('.tier-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tier="${tier}"]`).classList.add('active');
+
+            // Update vocabulary
+            updateCurrentVocabulary();
+        }
+
+        function updateLevelDescription() {
+            const level = leveledVocabulary.levels.find(l => l.id === gameState.currentYearLevel);
+            if (level) {
+                document.getElementById('levelDescription').textContent = level.description;
+            }
+        }
+
+        function updateCurrentVocabulary() {
+            // Get words for the selected year and tier
+            const level = leveledVocabulary.levels.find(l => l.id === gameState.currentYearLevel);
+            if (level) {
+                const tierData = level.tiers.find(t => t.tier === gameState.currentTier);
+                if (tierData) {
+                    // Update the game to use these words
+                    gameState.currentLevelWords = tierData.words;
+                }
+            }
+        }
+
+        function getCurrentLevelWords() {
+            const level = leveledVocabulary.levels.find(l => l.id === gameState.currentYearLevel);
+            if (level) {
+                const tierData = level.tiers.find(t => t.tier === gameState.currentTier);
+                if (tierData) {
+                    return tierData.words;
+                }
+            }
+            return [];
+        }
+
+        // Vocabulary List Functions
+        function loadVocabList() {
+            filterVocabList();
+        }
+
+        function filterVocabList() {
+            const yearFilter = document.getElementById('vocabYearFilter').value;
+            const tierFilter = document.getElementById('vocabTierFilter').value;
+            const searchQuery = document.getElementById('vocabSearch').value.toLowerCase();
+
+            let filteredWords = [];
+
+            leveledVocabulary.levels.forEach(level => {
+                if (yearFilter === 'all' || yearFilter === level.id) {
+                    level.tiers.forEach(tier => {
+                        if (tierFilter === 'all' || tierFilter === String(tier.tier)) {
+                            tier.words.forEach(word => {
+                                if (searchQuery === '' ||
+                                    word.word.toLowerCase().includes(searchQuery) ||
+                                    word.definition.toLowerCase().includes(searchQuery)) {
+                                    filteredWords.push({
+                                        ...word,
+                                        levelId: level.id,
+                                        levelName: level.name,
+                                        tierNum: tier.tier,
+                                        tierName: tier.name
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Update word count
+            document.getElementById('wordCountBadge').textContent = `${filteredWords.length} words`;
+
+            // Render table
+            const tbody = document.getElementById('vocabTableBody');
+            tbody.innerHTML = filteredWords.map(word => `
+                <tr>
+                    <td class="emoji-cell">${word.emoji}</td>
+                    <td class="word-cell">
+                        ${word.word}
+                        <button class="speak-mini" onclick="speakWord('${word.word}')">🔊</button>
+                        <div class="pronunciation-cell">${word.pronunciation}</div>
+                    </td>
+                    <td>${word.definition}</td>
+                    <td style="font-style: italic; color: #666;">"${word.exampleSentence}"</td>
+                    <td>
+                        <span class="level-badge ${word.levelId}">${word.levelName}</span>
+                        <span class="tier-badge t${word.tierNum}">${word.tierName}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load Categories
+        function loadCategories() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+
+            vocabularyData.curriculum.categories.forEach(category => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.onclick = () => selectCategory(category.id);
+                card.innerHTML = `
+                    <div class="category-icon">${category.icon}</div>
+                    <div class="category-name">${category.name}</div>
+                    <div class="category-count">${category.words.length} words</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // loadPrintCategories removed - now using year/tier selectors instead
+
+        function selectCategory(categoryId) {
+            gameState.currentCategory = vocabularyData.curriculum.categories.find(c => c.id === categoryId);
+            gameState.currentWordIndex = 0;
+            gameState.correctAnswers = 0;
+            gameState.wordsLearned = [];
+
+            // Update UI
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Screen Navigation
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(screenName + 'Screen').classList.add('active');
+            document.querySelector(`[data-screen="${screenName}"]`)?.classList.add('active');
+
+            if (screenName === 'pictureMatch') {
+                startPictureMatch();
+            } else if (screenName === 'spelling') {
+                startSpellingGame();
+            } else if (screenName === 'story') {
+                loadNewStory();
+            } else if (screenName === 'vocabList') {
+                loadVocabList();
+            }
+        }
+
+        // Timer Functions
+        function toggleTimer() {
+            if (gameState.timerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            gameState.timerRunning = true;
+            document.getElementById('startTimerBtn').textContent = 'Pause';
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateTimerDisplay();
+
+                if (gameState.timeRemaining <= 0) {
+                    endSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            gameState.timerRunning = false;
+            document.getElementById('startTimerBtn').textContent = 'Resume';
+            clearInterval(gameState.timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            document.getElementById('timerDisplay').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            const timer = document.getElementById('timer');
+            timer.classList.remove('warning', 'ended');
+
+            if (gameState.timeRemaining <= 60) {
+                timer.classList.add('ended');
+            } else if (gameState.timeRemaining <= 180) {
+                timer.classList.add('warning');
+            }
+        }
+
+        function endSession() {
+            pauseTimer();
+            showResults();
+        }
+
+        function addStars(count) {
+            gameState.stars += count;
+            document.getElementById('starCount').textContent = gameState.stars;
+
+            // Animation
+            const starsDisplay = document.querySelector('.stars-display');
+            starsDisplay.style.transform = 'scale(1.3)';
+            setTimeout(() => starsDisplay.style.transform = 'scale(1)', 300);
+        }
+
+        // Picture Match Game
+        function startPictureMatch() {
+            gameState.currentWordIndex = 0;
+            gameState.correctAnswers = 0;
+            loadPictureMatchRound();
+        }
+
+        function loadPictureMatchRound() {
+            const container = document.getElementById('matchContainer');
+            const words = getCurrentLevelWords();
+
+            if (words.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📚</div>
+                        <h3>No words available for this level!</h3>
+                        <p>Please select a different year level or difficulty tier from the home page.</p>
+                        <button class="btn btn-primary" onclick="showScreen('home')" style="margin-top: 20px;">🏠 Go Home</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (gameState.currentWordIndex >= Math.min(words.length, 10)) {
+                showResults();
+                return;
+            }
+
+            const currentWord = words[gameState.currentWordIndex];
+            const progress = ((gameState.currentWordIndex + 1) / Math.min(words.length, 10)) * 100;
+            document.getElementById('matchProgress').style.width = progress + '%';
+
+            // Get 3 wrong options
+            const otherWords = words.filter(w => w.word !== currentWord.word);
+            const shuffledOthers = otherWords.sort(() => Math.random() - 0.5).slice(0, 3);
+            const options = [currentWord, ...shuffledOthers].sort(() => Math.random() - 0.5);
+
+            container.innerHTML = `
+                <div class="word-display">
+                    ${currentWord.definition}
+                    <button class="speak-btn" onclick="speakWord('${currentWord.word}')" title="Hear the word">🔊</button>
+                </div>
+                <div class="picture-grid">
+                    ${options.map(opt => `
+                        <div class="picture-card" onclick="checkPictureAnswer('${opt.word}', '${currentWord.word}', this)">
+                            <div class="picture-emoji">${opt.emoji}</div>
+                            <div class="picture-label">${opt.word}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function checkPictureAnswer(selected, correct, element) {
+            const cards = document.querySelectorAll('.picture-card');
+            cards.forEach(card => card.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                element.classList.add('correct');
+                gameState.correctAnswers++;
+                addStars(1);
+
+                const words = getCurrentLevelWords();
+                const word = words[gameState.currentWordIndex];
+                if (word && !gameState.wordsLearned.includes(word.word)) {
+                    gameState.wordsLearned.push(word.word);
+                }
+
+                setTimeout(() => {
+                    gameState.currentWordIndex++;
+                    loadPictureMatchRound();
+                }, 1000);
+            } else {
+                element.classList.add('wrong');
+                setTimeout(() => {
+                    cards.forEach(card => {
+                        card.style.pointerEvents = 'auto';
+                        card.classList.remove('wrong');
+                    });
+                }, 1000);
+            }
+        }
+
+        // Spelling Game
+        function startSpellingGame() {
+            gameState.currentWordIndex = 0;
+            gameState.correctAnswers = 0;
+            loadSpellingRound();
+        }
+
+        let spellingAnswer = '';
+
+        function loadSpellingRound() {
+            const container = document.getElementById('spellingContainer');
+            const allLevelWords = getCurrentLevelWords();
+            const words = allLevelWords.filter(w => w.word.length <= 8);
+
+            if (words.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">✏️</div>
+                        <h3>No words available for spelling!</h3>
+                        <p>Please select a different year level or difficulty tier from the home page.</p>
+                        <button class="btn btn-primary" onclick="showScreen('home')" style="margin-top: 20px;">🏠 Go Home</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (gameState.currentWordIndex >= Math.min(words.length, 8)) {
+                showResults();
+                return;
+            }
+
+            const currentWord = words[gameState.currentWordIndex];
+            const progress = ((gameState.currentWordIndex + 1) / Math.min(words.length, 8)) * 100;
+            document.getElementById('spellingProgress').style.width = progress + '%';
+
+            spellingAnswer = '';
+
+            // Create scrambled letters
+            const letters = currentWord.word.split('');
+            const extraLetters = 'abcdefghijklmnopqrstuvwxyz'.split('')
+                .filter(l => !letters.includes(l))
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+            const allLetters = [...letters, ...extraLetters].sort(() => Math.random() - 0.5);
+
+            container.innerHTML = `
+                <div class="spelling-clue">
+                    <strong>Clue:</strong> ${currentWord.definition}
+                    <button class="speak-btn" onclick="speakWord('${currentWord.word}')" style="margin-left: 10px;">🔊 Hear it</button>
+                </div>
+                <div class="letter-slots" id="letterSlots">
+                    ${currentWord.word.split('').map(() => `
+                        <div class="letter-slot"></div>
+                    `).join('')}
+                </div>
+                <div class="letter-bank" id="letterBank">
+                    ${allLetters.map((letter, i) => `
+                        <button class="letter-btn" onclick="addLetter('${letter}', ${i})" id="letter-${i}">${letter}</button>
+                    `).join('')}
+                </div>
+                <div class="spelling-controls">
+                    <button class="btn btn-danger" onclick="clearSpelling()">Clear</button>
+                    <button class="btn btn-success" onclick="checkSpelling('${currentWord.word}')">Check ✓</button>
+                </div>
+            `;
+        }
+
+        function addLetter(letter, index) {
+            const slots = document.querySelectorAll('.letter-slot');
+            const currentLength = spellingAnswer.length;
+
+            if (currentLength < slots.length) {
+                spellingAnswer += letter;
+                slots[currentLength].textContent = letter.toUpperCase();
+                slots[currentLength].classList.add('filled');
+                document.getElementById(`letter-${index}`).disabled = true;
+            }
+        }
+
+        function clearSpelling() {
+            spellingAnswer = '';
+            document.querySelectorAll('.letter-slot').forEach(slot => {
+                slot.textContent = '';
+                slot.classList.remove('filled');
+            });
+            document.querySelectorAll('.letter-btn').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+
+        function checkSpelling(correct) {
+            if (spellingAnswer.toLowerCase() === correct.toLowerCase()) {
+                gameState.correctAnswers++;
+                addStars(2);
+
+                if (!gameState.wordsLearned.includes(correct)) {
+                    gameState.wordsLearned.push(correct);
+                }
+
+                document.querySelectorAll('.letter-slot').forEach(slot => {
+                    slot.style.background = 'linear-gradient(135deg, #4ECB71, #2ECC71)';
+                    slot.style.color = 'white';
+                });
+
+                setTimeout(() => {
+                    gameState.currentWordIndex++;
+                    loadSpellingRound();
+                }, 1500);
+            } else {
+                document.querySelectorAll('.letter-slot').forEach(slot => {
+                    slot.style.background = 'linear-gradient(135deg, #FF6B6B, #FF5252)';
+                    slot.style.color = 'white';
+                });
+
+                setTimeout(() => {
+                    clearSpelling();
+                    document.querySelectorAll('.letter-slot').forEach(slot => {
+                        slot.style.background = 'white';
+                        slot.style.color = 'inherit';
+                    });
+                }, 1000);
+            }
+        }
+
+        // Story Mode
+        const storyTemplates = [
+            {
+                title: "A Day at School",
+                template: (words) => `
+                    <div class="story-scene">
+                        <div class="story-illustration">🏫📚✏️</div>
+                        <div class="story-text">
+                            Today was a special day! I woke up early and put on my <span class="story-highlight" onclick="showWordInfo('${words[0]?.word}')">${words[0]?.word || 'uniform'}</span>.
+                            After eating <span class="story-highlight" onclick="showWordInfo('${words[1]?.word}')">${words[1]?.word || 'breakfast'}</span>,
+                            I walked to school with my <span class="story-highlight" onclick="showWordInfo('${words[2]?.word}')">${words[2]?.word || 'lunchbox'}</span>.
+
+                            In the <span class="story-highlight" onclick="showWordInfo('${words[3]?.word}')">${words[3]?.word || 'classroom'}</span>,
+                            my <span class="story-highlight" onclick="showWordInfo('${words[4]?.word}')">${words[4]?.word || 'teacher'}</span>
+                            read us a wonderful story. At <span class="story-highlight" onclick="showWordInfo('${words[5]?.word}')">${words[5]?.word || 'playtime'}</span>,
+                            I played on the <span class="story-highlight" onclick="showWordInfo('${words[6]?.word}')">${words[6]?.word || 'seesaw'}</span> with my friends!
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Weather Walk",
+                template: (words) => `
+                    <div class="story-scene">
+                        <div class="story-illustration">🌈☀️🌧️</div>
+                        <div class="story-text">
+                            This morning, I looked out the window. The <span class="story-highlight" onclick="showWordInfo('${words[0]?.word}')">${words[0]?.word || 'sunshine'}</span>
+                            was bright and warm! But then the sky became grey and there was a light <span class="story-highlight" onclick="showWordInfo('${words[1]?.word}')">${words[1]?.word || 'drizzle'}</span>.
+
+                            I put on my <span class="story-highlight" onclick="showWordInfo('${words[2]?.word}')">${words[2]?.word || 'wellies'}</span>
+                            and took my <span class="story-highlight" onclick="showWordInfo('${words[3]?.word}')">${words[3]?.word || 'umbrella'}</span>.
+                            After the rain, I saw a beautiful <span class="story-highlight" onclick="showWordInfo('${words[4]?.word}')">${words[4]?.word || 'rainbow'}</span>
+                            and splashed in every <span class="story-highlight" onclick="showWordInfo('${words[5]?.word}')">${words[5]?.word || 'puddle'}</span>!
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Garden Adventures",
+                template: (words) => `
+                    <div class="story-scene">
+                        <div class="story-illustration">🌷🦔🐿️</div>
+                        <div class="story-text">
+                            In our <span class="story-highlight" onclick="showWordInfo('${words[0]?.word}')">${words[0]?.word || 'garden'}</span>,
+                            there are so many amazing animals! Yesterday I saw a <span class="story-highlight" onclick="showWordInfo('${words[1]?.word}')">${words[1]?.word || 'squirrel'}</span>
+                            climbing up the tree and a little <span class="story-highlight" onclick="showWordInfo('${words[2]?.word}')">${words[2]?.word || 'robin'}</span>
+                            with its pretty red <span class="story-highlight" onclick="showWordInfo('${words[3]?.word}')">${words[3]?.word || 'feathers'}</span>.
+
+                            At night, our <span class="story-highlight" onclick="showWordInfo('${words[4]?.word}')">${words[4]?.word || 'neighbour'}</span>
+                            said they spotted a <span class="story-highlight" onclick="showWordInfo('${words[5]?.word}')">${words[5]?.word || 'hedgehog'}</span>
+                            looking for food! The garden is their <span class="story-highlight" onclick="showWordInfo('${words[6]?.word}')">${words[6]?.word || 'habitat'}</span>.
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        function loadNewStory() {
+            const container = document.getElementById('storyContainer');
+            const story = storyTemplates[Math.floor(Math.random() * storyTemplates.length)];
+
+            // Get words from the selected year level and tier
+            let allWords = getCurrentLevelWords();
+
+            // If no leveled words, fall back to vocabulary data
+            if (allWords.length === 0) {
+                allWords = vocabularyData.curriculum.categories.flatMap(c => c.words);
+            }
+
+            const shuffledWords = allWords.sort(() => Math.random() - 0.5).slice(0, 10);
+
+            container.innerHTML = story.template(shuffledWords);
+        }
+
+        function showWordInfo(word) {
+            // First check leveled vocabulary
+            let wordData = null;
+            leveledVocabulary.levels.forEach(level => {
+                level.tiers.forEach(tier => {
+                    const found = tier.words.find(w => w.word === word);
+                    if (found) wordData = found;
+                });
+            });
+
+            // Fall back to category vocabulary if not found
+            if (!wordData) {
+                const allWords = vocabularyData.curriculum.categories.flatMap(c => c.words);
+                wordData = allWords.find(w => w.word === word);
+            }
+
+            if (wordData) {
+                document.getElementById('popupWord').textContent = wordData.word;
+                document.getElementById('popupPronunciation').textContent = wordData.pronunciation;
+                document.getElementById('popupDefinition').textContent = wordData.definition;
+                document.getElementById('popupExample').textContent = `"${wordData.exampleSentence}"`;
+
+                document.getElementById('popupOverlay').classList.add('show');
+                document.getElementById('wordPopup').classList.add('show');
+
+                if (!gameState.wordsLearned.includes(word)) {
+                    gameState.wordsLearned.push(word);
+                    addStars(1);
+                }
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').classList.remove('show');
+            document.getElementById('wordPopup').classList.remove('show');
+        }
+
+        // Results
+        function showResults() {
+            document.getElementById('correctCount').textContent = gameState.correctAnswers;
+            document.getElementById('totalStars').textContent = gameState.stars;
+
+            const learnedList = document.getElementById('learnedWordsList');
+            learnedList.innerHTML = gameState.wordsLearned.map(word =>
+                `<span class="word-chip">${word}</span>`
+            ).join('');
+
+            showScreen('results');
+        }
+
+        // Text-to-Speech
+        function speakWord(word) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-GB';
+                utterance.rate = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Read Story Aloud
+        let isReading = false;
+
+        function readStoryAloud() {
+            if ('speechSynthesis' in window) {
+                // Get the story text from the container
+                const storyContainer = document.getElementById('storyContainer');
+                const storyText = storyContainer.querySelector('.story-text');
+
+                if (storyText) {
+                    // Get plain text content (removes HTML tags)
+                    const text = storyText.innerText;
+
+                    // Cancel any ongoing speech
+                    speechSynthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'en-GB';
+                    utterance.rate = 0.75; // Slower for kids
+                    utterance.pitch = 1.1; // Slightly higher pitch for friendly tone
+
+                    // Show/hide buttons
+                    document.getElementById('readStoryBtn').style.display = 'none';
+                    document.getElementById('stopReadingBtn').style.display = 'inline-flex';
+                    isReading = true;
+
+                    // When finished reading
+                    utterance.onend = function() {
+                        document.getElementById('readStoryBtn').style.display = 'inline-flex';
+                        document.getElementById('stopReadingBtn').style.display = 'none';
+                        isReading = false;
+                    };
+
+                    // Handle errors
+                    utterance.onerror = function() {
+                        document.getElementById('readStoryBtn').style.display = 'inline-flex';
+                        document.getElementById('stopReadingBtn').style.display = 'none';
+                        isReading = false;
+                    };
+
+                    speechSynthesis.speak(utterance);
+                }
+            } else {
+                alert('Sorry, your browser does not support text-to-speech.');
+            }
+        }
+
+        function stopReading() {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                document.getElementById('readStoryBtn').style.display = 'inline-flex';
+                document.getElementById('stopReadingBtn').style.display = 'none';
+                isReading = false;
+            }
+        }
+
+        // Helper function to get words for printing based on year/tier selection
+        function getPrintableWords() {
+            const yearFilter = document.getElementById('printYearSelect').value;
+            const tierFilter = document.getElementById('printTierSelect').value;
+            const shouldShuffle = document.getElementById('shuffleWords').checked;
+            let words = [];
+
+            leveledVocabulary.levels.forEach(level => {
+                if (yearFilter === 'all' || yearFilter === level.id) {
+                    level.tiers.forEach(tier => {
+                        if (tierFilter === 'all' || tierFilter === String(tier.tier)) {
+                            tier.words.forEach(word => {
+                                words.push({
+                                    ...word,
+                                    yearLevel: level.name,
+                                    tierName: tier.name
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Shuffle words if option is checked
+            if (shouldShuffle) {
+                words = words.sort(() => Math.random() - 0.5);
+            }
+
+            return words;
+        }
+
+        // Preview Functions
+        function showPreview(html) {
+            const previewDiv = document.getElementById('pdfPreview');
+            const iframe = document.getElementById('pdfFrame');
+
+            previewDiv.style.display = 'block';
+            iframe.srcdoc = html;
+
+            // Scroll to preview
+            previewDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closePreview() {
+            document.getElementById('pdfPreview').style.display = 'none';
+            document.getElementById('pdfFrame').srcdoc = '';
+        }
+
+        function previewFlashcards() {
+            let words = getPrintableWords();
+            if (words.length === 0) {
+                alert('No words found for the selected year level and difficulty. Please select different options.');
+                return;
+            }
+            const html = generateFlashcardHTML(words);
+            showPreview(html);
+        }
+
+        function previewActivitySheets() {
+            let words = getPrintableWords();
+            if (words.length === 0) {
+                alert('No words found for the selected year level and difficulty. Please select different options.');
+                return;
+            }
+            words = words.slice(0, 20);
+            const html = generateActivityHTML(words);
+            showPreview(html);
+        }
+
+        function previewPosters() {
+            let words = getPrintableWords();
+            if (words.length === 0) {
+                alert('No words found for the selected year level and difficulty. Please select different options.');
+                return;
+            }
+
+            const yearFilter = document.getElementById('printYearSelect').value;
+            const tierFilter = document.getElementById('printTierSelect').value;
+
+            let posterGroups = [];
+            const yearName = yearFilter === 'all' ? 'All Years' :
+                leveledVocabulary.levels.find(l => l.id === yearFilter)?.name || 'Words';
+            const tierName = tierFilter === 'all' ? '' :
+                (['Foundation', 'Developing', 'Extending'][parseInt(tierFilter) - 1] || '');
+
+            for (let i = 0; i < words.length; i += 8) {
+                posterGroups.push({
+                    name: `${yearName} ${tierName}`.trim() + (posterGroups.length > 0 ? ` (${posterGroups.length + 1})` : ''),
+                    icon: ['📚', '📖', '✏️', '🎓'][posterGroups.length % 4],
+                    words: words.slice(i, i + 8)
+                });
+            }
+            posterGroups = posterGroups.slice(0, 4);
+
+            const html = generatePosterHTML(posterGroups);
+            showPreview(html);
+        }
+
+        // PDF Generation Functions
+        function generateFlashcards() {
+            let words = getPrintableWords();
+
+            if (words.length === 0) {
+                alert('No words found for the selected year level and difficulty. Please select different options.');
+                return;
+            }
+
+            // Generate HTML for flashcards
+            const html = generateFlashcardHTML(words);
+            openPrintWindow(html, 'Word Wizard - Flashcards');
+        }
+
+        function generateFlashcardHTML(words) {
+            return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Wizard Flashcards</title>
+    <style>
+        @page { size: A4; margin: 10mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Comic Sans MS', 'Segoe UI', Arial, sans-serif; }
+        .page { page-break-after: always; }
+        .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px; }
+        .flashcard {
+            border: 3px solid #6C63FF;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        }
+        .flashcard-emoji { font-size: 48px; margin-bottom: 10px; }
+        .flashcard-word { font-size: 28px; font-weight: bold; color: #6C63FF; margin-bottom: 8px; text-transform: capitalize; }
+        .flashcard-pronunciation { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .flashcard-definition { font-size: 14px; line-height: 1.4; }
+        .header { text-align: center; padding: 20px; border-bottom: 3px solid #6C63FF; margin-bottom: 20px; }
+        .header h1 { color: #6C63FF; font-size: 32px; }
+        .header p { color: #666; }
+        @media print {
+            .flashcard { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧙‍♂️ Word Wizard Flashcards</h1>
+        <p>Cut out the cards and practice your vocabulary!</p>
+    </div>
+    <div class="card-grid">
+        ${words.map(word => `
+            <div class="flashcard">
+                <div class="flashcard-emoji">${word.emoji}</div>
+                <div class="flashcard-word">${word.word}</div>
+                <div class="flashcard-pronunciation">${word.pronunciation}</div>
+                <div class="flashcard-definition">${word.definition}</div>
+            </div>
+        `).join('')}
+    </div>
+</body>
+</html>`;
+        }
+
+        function generateActivitySheets() {
+            let words = getPrintableWords();
+
+            if (words.length === 0) {
+                alert('No words found for the selected year level and difficulty. Please select different options.');
+                return;
+            }
+
+            // Limit to 20 words for activity sheets
+            words = words.slice(0, 20);
+
+            const html = generateActivityHTML(words);
+            openPrintWindow(html, 'Word Wizard - Activity Sheets');
+        }
+
+        function generateActivityHTML(words) {
+            const matchingWords = words.slice(0, 6);
+            const tracingWords = words.filter(w => w.word.length <= 7).slice(0, 5);
+            const fillBlankWords = words.slice(0, 5);
+
+            return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Wizard Activity Sheets</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Comic Sans MS', Arial, sans-serif; line-height: 1.6; }
+        .page { page-break-after: always; padding: 20px; }
+        h1 { color: #6C63FF; text-align: center; margin-bottom: 20px; font-size: 28px; }
+        h2 { color: #6C63FF; margin: 20px 0 15px 0; font-size: 22px; border-bottom: 2px dashed #6C63FF; padding-bottom: 5px; }
+        .activity { margin-bottom: 30px; }
+        .instruction { background: #FFF3E0; padding: 10px 15px; border-radius: 10px; margin-bottom: 15px; font-size: 16px; }
+
+        /* Matching */
+        .matching-grid { display: flex; justify-content: space-between; }
+        .matching-column { width: 45%; }
+        .matching-item { padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 18px; }
+        .matching-item.word { background: #E8F5E9; }
+        .matching-item.def { background: #E3F2FD; font-size: 14px; }
+
+        /* Tracing */
+        .tracing-word { font-size: 48px; color: #ddd; letter-spacing: 15px; margin: 20px 0; padding: 15px; border: 2px dashed #ccc; border-radius: 10px; text-transform: uppercase; }
+        .tracing-line { border-bottom: 2px dashed #999; height: 50px; margin: 10px 0; }
+
+        /* Fill in blank */
+        .fill-sentence { font-size: 18px; margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 10px; }
+        .blank { display: inline-block; width: 100px; border-bottom: 2px solid #6C63FF; margin: 0 5px; }
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .word-option { padding: 8px 15px; background: #6C63FF; color: white; border-radius: 20px; font-size: 14px; }
+
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        .emoji { font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>🧙‍♂️ Word Wizard Activity Sheet</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">Name: _________________ Date: _____________</p>
+
+        <div class="activity">
+            <h2>✏️ Activity 1: Match the Words</h2>
+            <div class="instruction">Draw a line to match each word with its meaning!</div>
+            <div class="matching-grid">
+                <div class="matching-column">
+                    ${matchingWords.map(w => `<div class="matching-item word"><span class="emoji">${w.emoji}</span> ${w.word}</div>`).join('')}
+                </div>
+                <div class="matching-column">
+                    ${matchingWords.sort(() => Math.random() - 0.5).map(w => `<div class="matching-item def">${w.definition}</div>`).join('')}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        <h1>🧙‍♂️ Word Wizard Activity Sheet</h1>
+
+        <div class="activity">
+            <h2>✍️ Activity 2: Trace and Write</h2>
+            <div class="instruction">Trace the dotted letters, then write the word yourself!</div>
+            ${tracingWords.map(w => `
+                <div class="tracing-word">${w.word}</div>
+                <div class="tracing-line"></div>
+            `).join('')}
+        </div>
+    </div>
+
+    <div class="page">
+        <h1>🧙‍♂️ Word Wizard Activity Sheet</h1>
+
+        <div class="activity">
+            <h2>📝 Activity 3: Fill in the Blanks</h2>
+            <div class="instruction">Use the words from the word bank to complete each sentence!</div>
+
+            ${fillBlankWords.map(w => `
+                <div class="fill-sentence">
+                    ${w.exampleSentence.replace(new RegExp(w.word, 'gi'), '<span class="blank"></span>')}
+                </div>
+            `).join('')}
+
+            <div class="word-bank">
+                <strong>Word Bank:</strong>
+                ${fillBlankWords.map(w => `<span class="word-option">${w.word}</span>`).join('')}
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>⭐ Great job completing your activities! ⭐</p>
+            <p>🧙‍♂️ Word Wizard - Learning English is magical!</p>
+        </div>
+    </div>
+</body>
+</html>`;
+        }
+
+        function generatePosters() {
+            let words = getPrintableWords();
+
+            if (words.length === 0) {
+                alert('No words found for the selected year level and difficulty. Please select different options.');
+                return;
+            }
+
+            // Group words into poster-sized chunks (8 words per poster)
+            const yearFilter = document.getElementById('printYearSelect').value;
+            const tierFilter = document.getElementById('printTierSelect').value;
+
+            // Create pseudo-categories for poster generation
+            let posterGroups = [];
+            const yearName = yearFilter === 'all' ? 'All Years' :
+                leveledVocabulary.levels.find(l => l.id === yearFilter)?.name || 'Words';
+            const tierName = tierFilter === 'all' ? '' :
+                (['Foundation', 'Developing', 'Extending'][parseInt(tierFilter) - 1] || '');
+
+            // Split words into groups of 8 for each poster
+            for (let i = 0; i < words.length; i += 8) {
+                posterGroups.push({
+                    name: `${yearName} ${tierName}`.trim() + (posterGroups.length > 0 ? ` (${posterGroups.length + 1})` : ''),
+                    icon: ['📚', '📖', '✏️', '🎓'][posterGroups.length % 4],
+                    words: words.slice(i, i + 8)
+                });
+            }
+
+            // Limit to 4 posters
+            posterGroups = posterGroups.slice(0, 4);
+
+            const html = generatePosterHTML(posterGroups);
+            openPrintWindow(html, 'Word Wizard - Word Posters');
+        }
+
+        function generatePosterHTML(categories) {
+            return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Wizard Posters</title>
+    <style>
+        @page { size: A4 landscape; margin: 10mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Comic Sans MS', Arial, sans-serif; }
+        .poster {
+            page-break-after: always;
+            padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .poster-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .poster-header h1 { font-size: 48px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .poster-header .icon { font-size: 64px; }
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+        .word-box {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .word-box .emoji { font-size: 36px; }
+        .word-box .word { font-size: 16px; font-weight: bold; color: #6C63FF; margin: 8px 0; text-transform: capitalize; }
+        .word-box .pronunciation { font-size: 11px; color: #666; }
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    ${categories.map(cat => `
+        <div class="poster">
+            <div class="poster-header">
+                <div class="icon">${cat.icon}</div>
+                <h1>${cat.name} Words</h1>
+            </div>
+            <div class="word-grid">
+                ${cat.words.map(w => `
+                    <div class="word-box">
+                        <div class="emoji">${w.emoji}</div>
+                        <div class="word">${w.word}</div>
+                        <div class="pronunciation">${w.pronunciation}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="footer">🧙‍♂️ Word Wizard - Learning is Magical!</div>
+        </div>
+    `).join('')}
+</body>
+</html>`;
+        }
+
+        function openPrintWindow(html, title) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert('Please allow pop-ups for this page to print materials. Check your browser settings and try again.');
+                return;
+            }
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
+    </script>
+</body>
+</html>
