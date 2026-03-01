@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Galactic Word Defenders</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body { background: #0a0a1a; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; touch-action: none; }
+    #game-container { width: 100vw; height: 100vh; position: relative; }
+    .screen { position: absolute; width: 100%; height: 100%; display: none; }
+    .screen.active { display: flex; }
+    .screen.hidden { display: none !important; }
+    
+    #title-screen, #level-select-screen { background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 100%); flex-direction: column; justify-content: center; align-items: center; padding: 20px; position: relative; }
+    .stars { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
+    .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 2s infinite; }
+    @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    #title-logo { font-size: clamp(28px, 6vw, 56px); font-weight: 800; color: #4a9eff; text-align: center; text-shadow: 0 0 30px #4a9eff; animation: pulse 2s infinite; z-index: 2; margin-bottom: 30px; position: relative; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+    .btn { padding: clamp(12px, 3vw, 20px) clamp(20px, 5vw, 40px); font-size: clamp(16px, 3vw, 24px); font-weight: 700; color: #fff; background: linear-gradient(180deg, #4a9eff 0%, #2a5fbf 100%); border: none; border-radius: 15px; cursor: pointer; margin: 8px; transition: all 0.2s; position: relative; z-index: 2; }
+    .btn:hover { transform: scale(1.05); }
+    .btn:active { transform: scale(0.95); }
+    .btn-secondary { background: linear-gradient(180deg, #6a6a8a 0%, #4a4a6a 100%); }
+    
+    .level-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; max-width: 800px; z-index: 2; padding: 20px; position: relative; }
+    .level-card { background: linear-gradient(180deg, #1a1a3e 0%, #0d0d2b 100%); border: 3px solid #4a9eff; border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; z-index: 2; }
+    .level-card:hover { transform: scale(1.05); border-color: #7ab8ff; box-shadow: 0 0 20px rgba(74, 158, 255, 0.4); }
+    .level-card.locked { opacity: 0.5; filter: grayscale(0.8); }
+    .level-icon { font-size: clamp(32px, 6vw, 48px); margin-bottom: 10px; }
+    .level-name { font-size: clamp(14px, 2.5vw, 18px); font-weight: 700; color: #fff; margin-bottom: 5px; }
+    .level-desc { font-size: clamp(11px, 2vw, 14px); color: #aaaaff; }
+    
+    #battle-screen { background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%); }
+    #battle-canvas { width: 100%; height: 100%; display: block; }
+    #hud { position: absolute; top: 10px; left: 10px; color: #fff; font-size: clamp(14px, 3vw, 20px); font-weight: 700; z-index: 10; display: flex; gap: 15px; flex-wrap: wrap; }
+    #hud span { background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 10px; }
+    #pause-btn, #back-btn { position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; font-size: 24px; background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; color: #fff; cursor: pointer; z-index: 10; }
+    #back-btn { right: 70px; }
+    
+    #question-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: min(95vw, 700px); background: linear-gradient(180deg, #1a1a3e 0%, #0d0d2b 100%); border: 4px solid #4a9eff; border-radius: 20px 20px 0 0; padding: clamp(15px, 3vw, 25px); z-index: 100; }
+    #question-panel.hidden { transform: translateX(-50%) translateY(100%); }
+    .timer-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
+    .timer-fill { height: 100%; background: linear-gradient(90deg, #4aff6a, #ffaa4a); }
+    #question-text { color: #fff; font-size: clamp(18px, 4vw, 26px); font-weight: 700; text-align: center; margin-bottom: 15px; }
+    #question-letter { font-size: clamp(48px, 12vw, 96px); font-weight: 800; color: #4a9eff; text-align: center; margin-bottom: 15px; }
+    .answers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .answer-btn { background: linear-gradient(180deg, #4a9eff 0%, #2a5fbf 100%); border: 3px solid #7ab8ff; border-radius: 15px; padding: clamp(15px, 4vw, 25px); color: #fff; font-size: clamp(18px, 4vw, 24px); font-weight: 700; cursor: pointer; }
+    .answer-btn:hover { transform: scale(1.05); }
+    .answer-btn.correct { background: linear-gradient(180deg, #4aff6a 0%, #2abf4a 100%); }
+    .answer-btn.wrong { background: linear-gradient(180deg, #ff4a4a 0%, #bf2a2a 100%); }
+    #hint-btn { position: absolute; top: 10px; right: 10px; background: #ffaa4a; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; opacity: 0.5; }
+    #hint-btn.available { opacity: 1; }
+    
+    #wave-notification { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: clamp(32px, 8vw, 72px); font-weight: 800; color: #4a9eff; opacity: 0; z-index: 50; pointer-events: none; }
+    
+    #gameover-screen { background: rgba(0,0,0,0.9); flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
+    #gameover-text { font-size: clamp(32px, 8vw, 64px); font-weight: 800; color: #ff4a4a; margin-bottom: 20px; }
+    #gameover-wave { font-size: clamp(20px, 4vw, 32px); color: #fff; margin-bottom: 40px; }
+    
+    #station-health-container { position: absolute; top: 70px; right: 10px; z-index: 10; }
+    #station-health-bar { width: 140px; height: 12px; background: #333; border-radius: 6px; overflow: hidden; border: 2px solid #fff; }
+    #station-health-fill { width: 100%; height: 100%; background: #4aff6a; }
+    #station-label { color: #fff; font-size: 12px; text-align: center; margin-top: 5px; }
+    
+    #level-indicator { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px 25px; border-radius: 20px; color: #fff; font-size: 18px; font-weight: 700; z-index: 10; display:flex;align-items:center;gap:10px; }
+    #difficulty-badge { background:rgba(255,255,255,0.2);padding:5px 12px;border-radius:12px;font-size:14px; }
+    .difficulty-btn.selected { transform:scale(1.1);box-shadow:0 0 20px currentColor; }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="title-screen" class="screen active">
+      <div class="stars" id="stars"></div>
+      <div id="title-logo">🚀 GALACTIC WORD<br>DEFENDERS</div>
+      <button class="btn" id="play-btn">▶ PLAY GAME</button>
+      <button class="btn btn-secondary" id="about-btn">ℹ️ ABOUT</button>
+    </div>
+    
+    <div id="level-select-screen" class="screen hidden">
+      <div class="stars"></div>
+      <h2 style="color:#fff;font-size:clamp(24px,5vw,36px);margin-bottom:10px;z-index:1;">Select Your Year Group</h2>
+      <div style="color:#aaaaff;font-size:clamp(14px,3vw,18px);margin-bottom:20px;z-index:1;">Then choose difficulty</div>
+      
+      <div style="display:flex;gap:10px;margin-bottom:20px;z-index:1;flex-wrap:wrap;justify-content:center;">
+        <button class="btn difficulty-btn" data-difficulty="easy" style="background:linear-gradient(180deg,#4aff6a 0%,#2abf4a 100%);">🌱 Easy</button>
+        <button class="btn difficulty-btn" data-difficulty="normal" style="background:linear-gradient(180deg,#4a9eff 0%,#2a5fbf 100%);">⭐ Normal</button>
+        <button class="btn difficulty-btn" data-difficulty="hard" style="background:linear-gradient(180deg,#ff6a6a 0%,#bf2a2a 100%);">🔥 Hard</button>
+      </div>
+      
+      <div class="level-grid" id="level-grid"></div>
+      <button class="btn btn-secondary" id="back-to-title-btn" style="z-index:1;margin-top:20px;">← BACK</button>
+    </div>
+    
+    <div id="battle-screen" class="screen hidden">
+      <canvas id="battle-canvas"></canvas>
+      <div id="level-indicator">Reception - Wave <span id="wave-num">1</span></div>
+      <div id="hud">
+        <span>❤️ <span id="lives-display">3</span></span>
+        <span>⭐ <span id="score-display">0</span></span>
+        <span>🪙 <span id="coins-display">0</span></span>
+      </div>
+      <button id="back-btn">←</button>
+      <button id="pause-btn">⏸</button>
+      <div id="station-health-container">
+        <div id="station-health-bar"><div id="station-health-fill"></div></div>
+        <div id="station-label">STATION</div>
+      </div>
+      <div id="wave-notification">WAVE 1</div>
+      <div id="question-panel" class="hidden">
+        <button id="hint-btn">💡</button>
+        <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div id="question-letter"></div>
+        <div id="question-text"></div>
+        <div class="answers-grid" id="answers-grid"></div>
+      </div>
+    </div>
+    
+    <div id="gameover-screen" class="screen hidden">
+      <div id="gameover-text">GAME OVER</div>
+      <div id="gameover-wave">Wave Reached: <span id="final-wave">1</span></div>
+      <div id="gameover-score" style="color:#fff;font-size:20px;margin-bottom:30px;">Score: <span id="final-score">0</span></div>
+      <button class="btn" onclick="restartGame()">🔄 PLAY AGAIN</button>
+      <button class="btn btn-secondary" onclick="showLevelSelect()" style="margin-top:15px;">📋 LEVEL SELECT</button>
+    </div>
+  </div>
+
+  <script>
+    // Question Banks by Year Group
+    const QUESTION_BANKS = {
+      reception: [
+        { letter: 'M', question: "What sound does this letter make?", answers: ["mmm", "aaa"], correct: 0, hint: "Think 'mummy'" },
+        { letter: 'A', question: "What sound does this letter make?", answers: ["aaa", "ooo"], correct: 0, hint: "Open wide" },
+        { letter: 'T', question: "What sound does this letter make?", answers: ["ttt", "mmm"], correct: 0, hint: "Like a clock" },
+        { letter: 'S', question: "What sound does this letter make?", answers: ["sss", "bbb"], correct: 0, hint: "Like a snake" },
+        { letter: 'P', question: "What sound does this letter make?", answers: ["ppp", "ddd"], correct: 0, hint: "Blow candles" },
+        { letter: 'N', question: "What sound does this letter make?", answers: ["nnn", "ttt"], correct: 0, hint: "Think 'no'" },
+        { letter: 'I', question: "What sound does this letter make?", answers: ["iii", "aaa"], correct: 0, hint: "Like insect" },
+        { letter: 'D', question: "What sound does this letter make?", answers: ["ddd", "ppp"], correct: 0, hint: "Like drum" },
+        { letter: 'G', question: "What sound does this letter make?", answers: ["ggg", "ttt"], correct: 0, hint: "Think 'go'" },
+        { letter: 'O', question: "What sound does this letter make?", answers: ["ooo", "eee"], correct: 0, hint: "Round mouth" },
+        { letter: 'C', question: "What sound does this letter make?", answers: ["ccc", "mmm"], correct: 0, hint: "Think 'cat'" },
+        { letter: 'K', question: "What sound does this letter make?", answers: ["kkk", "sss"], correct: 0, hint: "Think 'kite'" },
+        { letter: 'CK', question: "What sound does this make?", answers: ["kkk", "ppp"], correct: 0, hint: "End of duck" },
+        { letter: 'E', question: "What sound does this letter make?", answers: ["eee", "iii"], correct: 0, hint: "Ready to run" },
+        { letter: 'U', question: "What sound does this letter make?", answers: ["uuu", "ooo"], correct: 0, hint: "Like stuck" },
+        { letter: 'R', question: "What sound does this letter make?", answers: ["rrr", "nnn"], correct: 0, hint: "Growling dog" },
+        { letter: 'H', question: "What sound does this letter make?", answers: ["hhh", "rrr"], correct: 0, hint: "On glasses" },
+        { letter: 'B', question: "What sound does this letter make?", answers: ["bbb", "ttt"], correct: 0, hint: "Bouncing ball" },
+        { letter: 'F', question: "What sound does this letter make?", answers: ["fff", "lll"], correct: 0, hint: "Like wind" },
+        { letter: 'L', question: "What sound does this letter make?", answers: ["lll", "mmm"], correct: 0, hint: "Lollipop" }
+      ],
+      year1: [
+        { letter: 'AY', question: "What sound does 'ay' make?", answers: ["ayyy", "eee"], correct: 0, hint: "Like 'play'" },
+        { letter: 'OU', question: "What sound does 'ou' make?", answers: ["owww", "ooo"], correct: 0, hint: "Like 'out'" },
+        { letter: 'IE', question: "What sound does 'ie' make?", answers: ["eye", "eee"], correct: 0, hint: "Like 'pie'" },
+        { letter: 'EA', question: "What sound does 'ea' make?", answers: ["eee", "aaa"], correct: 0, hint: "Like 'tea'" },
+        { letter: 'OY', question: "What sound does 'oy' make?", answers: ["oyyy", "ooo"], correct: 0, hint: "Like 'boy'" },
+        { letter: 'IR', question: "What sound does 'ir' make?", answers: ["errr", "iii"], correct: 0, hint: "Like 'girl'" },
+        { letter: 'UE', question: "What sound does 'ue' make?", answers: ["ooo", "uuu"], correct: 0, hint: "Like 'blue'" },
+        { letter: 'AW', question: "What sound does 'aw' make?", answers: ["awww", "aaa"], correct: 0, hint: "Like 'saw'" },
+        { letter: 'WH', question: "What sound does 'wh' make?", answers: ["whh", "hhh"], correct: 0, hint: "Like 'what'" },
+        { letter: 'EW', question: "What sound does 'ew' make?", answers: ["yoo", "eee"], correct: 0, hint: "Like 'new'" }
+      ],
+      year2: [
+        { letter: '?', question: "Add punctuation: 'What is your name'", answers: ["?", "."], correct: 0, hint: "It's a question" },
+        { letter: '.', question: "Add punctuation: 'I like cats'", answers: [".", "?"], correct: 0, hint: "Statement" },
+        { letter: '!', question: "Add punctuation: 'Wow'", answers: ["!", "."], correct: 0, hint: "Exclamation" },
+        { letter: "'S", question: "Where does apostrophe go: 'the cats toy'", answers: ["cat's", "cats'"], correct: 0, hint: "One cat owns it" },
+        { letter: 'ING', question: "Add -ing to 'jump'", answers: ["jumping", "jumping"], correct: 0, hint: "Drop nothing" },
+        { letter: 'ED', question: "Add -ed to 'walk'", answers: ["walked", "walkt"], correct: 0, hint: "Past tense" },
+        { letter: 'ER', question: "Add -er to 'teach'", answers: ["teacher", "teachor"], correct: 0, hint: "Person who teaches" },
+        { letter: 'FUL', question: "Add -ful to 'help'", answers: ["helpful", "helpfull"], correct: 0, hint: "Full of help" },
+        { letter: 'LESS', question: "Add -less to 'hope'", answers: ["hopeless", "hopeless"], correct: 0, hint: "Without hope" },
+        { letter: 'LY', question: "Add -ly to 'quick'", answers: ["quickly", "quickly"], correct: 0, hint: "In a quick way" }
+      ],
+      year3: [
+        { letter: 'UN', question: "Add prefix to 'do':", answers: ["undo", "doer"], correct: 0, hint: "Reverse action" },
+        { letter: 'DIS', question: "Add prefix to 'like':", answers: ["dislike", "liking"], correct: 0, hint: "Opposite of like" },
+        { letter: 'RE', question: "Add prefix to 'write':", answers: ["rewrite", "writer"], correct: 0, hint: "Write again" },
+        { letter: 'PRE', question: "Add prefix to 'view':", answers: ["preview", "viewer"], correct: 0, hint: "View before" },
+        { letter: 'SPEECH', question: "Add speech marks: He said hello", answers: ['"He said hello"', 'He said "hello"'], correct: 1, hint: "Marks around spoken words" },
+        { letter: 'PARA', question: "What starts a new paragraph?", answers: ["New topic", "Long word"], correct: 0, hint: "Different idea" },
+        { letter: 'HAVE', question: "Present perfect: I ___ eaten", answers: ["have", "has"], correct: 0, hint: "With I" },
+        { letter: 'HAS', question: "Present perfect: She ___ eaten", answers: ["has", "have"], correct: 0, hint: "With she/he/it" },
+        { letter: 'WHEN', question: "Join: I was tired ___ I went to bed", answers: ["so", "but"], correct: 0, hint: "Result" },
+        { letter: 'BECAUSE', question: "Join: I smiled ___ I was happy", answers: ["because", "but"], correct: 0, hint: "Reason" }
+      ],
+      year4: [
+        { letter: 'THEIR', question: "Choose: ___ book", answers: ["Their", "There"], correct: 0, hint: "Belongs to them" },
+        { letter: 'THERE', question: "Choose: Over ___", answers: ["there", "their"], correct: 0, hint: "A place" },
+        { letter: 'THEY\'RE', question: "Choose: ___ playing", answers: ["They're", "Their"], correct: 0, hint: "They are" },
+        { letter: 'AFFECT', question: "Choose: It will ___ you", answers: ["affect", "effect"], correct: 0, hint: "Verb - to influence" },
+        { letter: 'EFFECT', question: "Choose: The ___ was good", answers: ["effect", "affect"], correct: 0, hint: "Noun - result" },
+        { letter: 'FRONTED', question: "Fronted adverbial: ___ I went home", answers: ["Later,", "I"], correct: 0, hint: "Time word first" },
+        { letter: 'POSSESS', question: "The girls' shoes means:", answers: ["Many girls", "One girl"], correct: 0, hint: "Apostrophe after s" },
+        { letter: 'SUB', question: "Sub- means:", answers: ["Under", "Over"], correct: 0, hint: "Below" },
+        { letter: 'INTER', question: "Inter- means:", answers: ["Between", "After"], correct: 0, hint: "Among" },
+        { letter: 'SUPER', question: "Super- means:", answers: ["Above/extra", "Below"], correct: 0, hint: "More than normal" }
+      ],
+      year5: [
+        { letter: 'WHO', question: "Relative pronoun: The boy ___ ran", answers: ["who", "which"], correct: 0, hint: "For people" },
+        { letter: 'WHICH', question: "Relative pronoun: The car ___ broke", answers: ["which", "who"], correct: 0, hint: "For things" },
+        { letter: 'WHERE', question: "Relative pronoun: The house ___ I live", answers: ["where", "who"], correct: 0, hint: "For places" },
+        { letter: 'MIGHT', question: "Modal verb: I ___ come", answers: ["might", "will"], correct: 0, hint: "Possibility" },
+        { letter: 'SHOULD', question: "Modal verb: You ___ try", answers: ["should", "might"], correct: 0, hint: "Advice" },
+        { letter: 'MUST', question: "Modal verb: You ___ stop", answers: ["must", "might"], correct: 0, hint: "Necessary" },
+        { letter: 'BRACKETS', question: "Parenthesis uses:", answers: ["(brackets)", "quotes"], correct: 0, hint: "Extra info" },
+        { letter: 'DASH', question: "Parenthesis can use:", answers: ["- dashes -", "only commas"], correct: 0, hint: "Either side" },
+        { letter: 'COHESION', question: "Linking words help:", answers: ["Flow", "Length"], correct: 0, hint: "Connect ideas" },
+        { letter: 'TRANSFORM', question: "Change 'soft' to verb:", answers: ["soften", "softly"], correct: 0, hint: "-en suffix" }
+      ],
+      year6: [
+        { letter: 'PASSIVE', question: "Passive: The mouse ___ by the cat", answers: ["was chased", "chased"], correct: 0, hint: "Was + verb" },
+        { letter: 'ACTIVE', question: "Active: The cat ___ the mouse", answers: ["chased", "was chased"], correct: 0, hint: "Did the action" },
+        { letter: 'SUBJUNCT', question: "Subjunctive: If I ___ you", answers: ["were", "was"], correct: 0, hint: "Were for all" },
+        { letter: 'SEMICOLON', question: "Joins related clauses:", answers: [";", ":"], correct: 0, hint: "With dot" },
+        { letter: 'COLON', question: "Introduces a list:", answers: [":", ";"], correct: 0, hint: "Two dots" },
+        { letter: 'FORMAL', question: "Formal: ___ you assist me?", answers: ["Could", "Can"], correct: 0, hint: "More polite" },
+        { letter: 'INFORMAL', question: "Informal: ___ you help me?", answers: ["Can", "Could"], correct: 0, hint: "Casual" },
+        { letter: 'SYNONYM', question: "Synonym of 'big':", answers: ["large", "small"], correct: 0, hint: "Same meaning" },
+        { letter: 'ANTONYM', question: "Antonym of 'hot':", answers: ["cold", "warm"], correct: 0, hint: "Opposite" },
+        { letter: 'HYPHEN', question: "Joins compound words:", answers: ["well-known", "well known"], correct: 0, hint: "Dash between" }
+      ]
+    };
+
+    const LEVELS = [
+      { id: 'reception', name: 'Reception', icon: '🌟', desc: 'Ages 4-5 | Letter Sounds', color: '#4aff6a' },
+      { id: 'year1', name: 'Year 1', icon: '🌙', desc: 'Ages 5-6 | Digraphs', color: '#4a9eff' },
+      { id: 'year2', name: 'Year 2', icon: '☀️', desc: 'Ages 6-7 | Grammar', color: '#ffaa4a' },
+      { id: 'year3', name: 'Year 3', icon: '🌍', desc: 'Ages 7-8 | Prefixes', color: '#aa6aff' },
+      { id: 'year4', name: 'Year 4', icon: '🪐', desc: 'Ages 8-9 | Homophones', color: '#ff6a6a' },
+      { id: 'year5', name: 'Year 5', icon: '⭐', desc: 'Ages 9-10 | Clauses', color: '#ffaaff' },
+      { id: 'year6', name: 'Year 6', icon: '🌌', desc: 'Ages 10-11 | Advanced', color: '#aaffff' }
+    ];
+
+    const DIFFICULTY_SETTINGS = {
+      easy: { timerSpeed: 1, alienSpeed: 0.7, spawnRate: 2500, label: '🌱 Easy', color: '#4aff6a' },
+      normal: { timerSpeed: 1.5, alienSpeed: 1, spawnRate: 2000, label: '⭐ Normal', color: '#4a9eff' },
+      hard: { timerSpeed: 2.5, alienSpeed: 1.4, spawnRate: 1500, label: '🔥 Hard', color: '#ff6a6a' }
+    };
+
+    const Game = {
+      lives: 3, score: 0, coins: 0, wave: 1, stationHealth: 100,
+      aliens: [], towers: [], projectiles: [],
+      currentQuestion: null, isAnswering: false, questionAnswered: false,
+      spawnTimer: 0, aliensRemaining: 0, waveInProgress: false,
+      lastTime: 0, canvas: null, ctx: null, width: 0, height: 0,
+      pathPoints: [], towerTargets: [null, null, null],
+      currentLevel: 'reception', difficulty: 'normal', mapSeed: 0
+    };
+
+    const els = {};
+
+    function init() {
+      els.titleScreen = document.getElementById('title-screen');
+      els.levelSelectScreen = document.getElementById('level-select-screen');
+      els.battleScreen = document.getElementById('battle-screen');
+      els.gameoverScreen = document.getElementById('gameover-screen');
+      els.questionPanel = document.getElementById('question-panel');
+      els.questionLetter = document.getElementById('question-letter');
+      els.questionText = document.getElementById('question-text');
+      els.answersGrid = document.getElementById('answers-grid');
+      els.timerFill = document.getElementById('timer-fill');
+      els.hintBtn = document.getElementById('hint-btn');
+      els.livesDisplay = document.getElementById('lives-display');
+      els.scoreDisplay = document.getElementById('score-display');
+      els.coinsDisplay = document.getElementById('coins-display');
+      els.stationHealthFill = document.getElementById('station-health-fill');
+      els.waveNotification = document.getElementById('wave-notification');
+      els.waveNum = document.getElementById('wave-num');
+      els.levelIndicator = document.getElementById('level-indicator');
+      els.canvas = document.getElementById('battle-canvas');
+      els.ctx = els.canvas.getContext('2d');
+      
+      document.getElementById('play-btn').addEventListener('click', showLevelSelect);
+      document.getElementById('about-btn').addEventListener('click', () => alert('📚 Galactic Word Defenders\n\nAges 4-11 (Reception to Year 6)\n\nChoose your year group and defend the space station by answering phonics and grammar questions!'));
+      document.getElementById('back-to-title-btn').addEventListener('click', () => switchScreen('title'));
+      document.getElementById('pause-btn').addEventListener('click', togglePause);
+      document.getElementById('back-btn').addEventListener('click', showLevelSelect);
+      els.hintBtn.addEventListener('click', showHint);
+      
+      createStars();
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      loadProgress();
+    }
+
+    function createStars() {
+      document.querySelectorAll('.stars').forEach(container => {
+        if (container.children.length === 0) {
+          for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+            star.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(star);
+          }
+        }
+      });
+    }
+
+    function showLevelSelect() {
+      els.battleScreen.classList.add('hidden');
+      els.battleScreen.classList.remove('active');
+      els.gameoverScreen.classList.add('hidden');
+      els.gameoverScreen.classList.remove('active');
+      els.titleScreen.classList.add('hidden');
+      els.titleScreen.classList.remove('active');
+      els.levelSelectScreen.classList.remove('hidden');
+      els.levelSelectScreen.classList.add('active');
+      
+      const grid = document.getElementById('level-grid');
+      grid.innerHTML = '';
+      LEVELS.forEach(level => {
+        const card = document.createElement('div');
+        card.className = 'level-card';
+        card.innerHTML = `
+          <div class="level-icon">${level.icon}</div>
+          <div class="level-name">${level.name}</div>
+          <div class="level-desc">${level.desc}</div>
+        `;
+        card.style.borderColor = level.color;
+        card.addEventListener('click', () => startLevel(level.id));
+        grid.appendChild(card);
+      });
+      
+      // Difficulty buttons
+      document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          Game.difficulty = btn.dataset.difficulty;
+        });
+      });
+      
+      // Set default
+      document.querySelector('[data-difficulty="normal"]').classList.add('selected');
+      Game.difficulty = 'normal';
+    }
+
+    function startLevel(levelId) {
+      Game.currentLevel = levelId;
+      const level = LEVELS.find(l => l.id === levelId);
+      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
+      els.levelIndicator.innerHTML = `${level.icon} ${level.name} - Wave <span id="wave-num">1</span> <span id="difficulty-badge" style="background:${diff.color}">${diff.label}</span>`;
+      
+      els.levelSelectScreen.classList.add('hidden');
+      els.levelSelectScreen.classList.remove('active');
+      els.battleScreen.classList.remove('hidden');
+      els.battleScreen.classList.add('active');
+      
+      resetGame();
+      setupTowers();
+      startWave();
+      Game.lastTime = performance.now();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function switchScreen(name) {
+      ['title', 'levelSelect', 'battle', 'gameover'].forEach(s => {
+        const el = els[s + 'Screen'];
+        if (el) {
+          el.classList.add('hidden');
+          el.classList.remove('active');
+        }
+      });
+      const target = els[name + 'Screen'];
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('active');
+      }
+    }
+
+    function resizeCanvas() {
+      els.canvas.width = window.innerWidth;
+      els.canvas.height = window.innerHeight;
+      Game.width = els.canvas.width;
+      Game.height = els.canvas.height;
+      generateMap();
+    }
+
+    function generateMap() {
+      const w = Game.width;
+      const h = Game.height;
+      Game.mapSeed = Game.wave;
+      
+      const mapType = Game.wave % 5;
+      
+      switch(mapType) {
+        case 0: // Straight with curves
+          Game.pathPoints = [
+            { x: 0, y: h * 0.5 },
+            { x: w * 0.2, y: h * 0.5 },
+            { x: w * 0.2, y: h * 0.35 },
+            { x: w * 0.4, y: h * 0.35 },
+            { x: w * 0.4, y: h * 0.65 },
+            { x: w * 0.6, y: h * 0.65 },
+            { x: w * 0.6, y: h * 0.4 },
+            { x: w * 0.8, y: h * 0.4 },
+            { x: w * 0.8, y: h * 0.5 },
+            { x: w * 0.95, y: h * 0.5 }
+          ];
+          break;
+        case 1: // Zigzag
+          Game.pathPoints = [
+            { x: 0, y: h * 0.3 },
+            { x: w * 0.15, y: h * 0.3 },
+            { x: w * 0.15, y: h * 0.7 },
+            { x: w * 0.35, y: h * 0.7 },
+            { x: w * 0.35, y: h * 0.3 },
+            { x: w * 0.55, y: h * 0.3 },
+            { x: w * 0.55, y: h * 0.7 },
+            { x: w * 0.75, y: h * 0.7 },
+            { x: w * 0.75, y: h * 0.5 },
+            { x: w * 0.95, y: h * 0.5 }
+          ];
+          break;
+        case 2: // Spiral-ish
+          Game.pathPoints = [
+            { x: 0, y: h * 0.5 },
+            { x: w * 0.25, y: h * 0.5 },
+            { x: w * 0.25, y: h * 0.2 },
+            { x: w * 0.5, y: h * 0.2 },
+            { x: w * 0.5, y: h * 0.8 },
+            { x: w * 0.75, y: h * 0.8 },
+            { x: w * 0.75, y: h * 0.5 },
+            { x: w * 0.9, y: h * 0.5 },
+            { x: w * 0.9, y: h * 0.35 },
+            { x: w * 0.95, y: h * 0.5 }
+          ];
+          break;
+        case 3: // Wavy
+          Game.pathPoints = [
+            { x: 0, y: h * 0.5 },
+            { x: w * 0.12, y: h * 0.35 },
+            { x: w * 0.25, y: h * 0.65 },
+            { x: w * 0.37, y: h * 0.35 },
+            { x: w * 0.5, y: h * 0.65 },
+            { x: w * 0.62, y: h * 0.35 },
+            { x: w * 0.75, y: h * 0.65 },
+            { x: w * 0.87, y: h * 0.45 },
+            { x: w * 0.92, y: h * 0.55 },
+            { x: w * 0.95, y: h * 0.5 }
+          ];
+          break;
+        case 4: // Long then turn
+          Game.pathPoints = [
+            { x: 0, y: h * 0.7 },
+            { x: w * 0.3, y: h * 0.7 },
+            { x: w * 0.3, y: h * 0.3 },
+            { x: w * 0.5, y: h * 0.3 },
+            { x: w * 0.5, y: h * 0.7 },
+            { x: w * 0.7, y: h * 0.7 },
+            { x: w * 0.7, y: h * 0.4 },
+            { x: w * 0.85, y: h * 0.4 },
+            { x: w * 0.85, y: h * 0.5 },
+            { x: w * 0.95, y: h * 0.5 }
+          ];
+          break;
+      }
+      
+      setupTowers();
+    }
+
+    function setupTowers() {
+      const w = Game.width;
+      const h = Game.height;
+      Game.towers = [
+        { x: w * 0.2, y: h * 0.5, range: 200, fireRate: 500, lastFired: 0 },
+        { x: w * 0.5, y: h * 0.4, range: 200, fireRate: 500, lastFired: 0 },
+        { x: w * 0.75, y: h * 0.6, range: 200, fireRate: 500, lastFired: 0 }
+      ];
+    }
+
+    function resetGame() {
+      Game.lives = 3; Game.score = 0; Game.coins = 0; Game.wave = 1;
+      Game.stationHealth = 100; Game.aliens = []; Game.projectiles = [];
+      Game.isAnswering = false; Game.questionAnswered = false;
+      Game.towerTargets = [null, null, null];
+      updateHUD();
+      els.stationHealthFill.style.width = '100%';
+      els.stationHealthFill.style.background = '#4aff6a';
+    }
+
+    function startWave() {
+      Game.waveInProgress = true;
+      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
+      Game.aliensRemaining = 5 + Game.wave * 2;
+      Game.spawnTimer = 0;
+      Game.spawnInterval = diff.spawnRate;
+      generateMap();
+      showWaveNotification();
+      if (document.getElementById('wave-num')) {
+        document.getElementById('wave-num').textContent = Game.wave;
+      }
+    }
+
+    function showWaveNotification() {
+      els.waveNotification.textContent = 'WAVE ' + Game.wave;
+      els.waveNotification.style.opacity = '1';
+      let opacity = 1;
+      const fade = setInterval(() => {
+        opacity -= 0.02;
+        els.waveNotification.style.opacity = opacity;
+        if (opacity <= 0) { clearInterval(fade); els.waveNotification.style.opacity = '0'; }
+      }, 20);
+    }
+
+    function spawnAlien() {
+      const colors = ['#4aff6a', '#6aff8a', '#4affaa', '#ffaa4a', '#ff6a6a', '#aa6aff'];
+      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
+      Game.aliens.push({
+        x: 0, y: Game.pathPoints[0].y, pathIndex: 0,
+        speed: (50 + Game.wave * 3) * diff.alienSpeed, hp: 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 40, wobble: Math.random() * Math.PI * 2, id: Math.random()
+      });
+    }
+
+    function gameLoop(currentTime) {
+      if (!els.battleScreen.classList.contains('active')) return;
+      const delta = currentTime - Game.lastTime;
+      Game.lastTime = currentTime;
+      update(delta, currentTime);
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function update(delta, time) {
+      if (!Game.waveInProgress) return;
+      
+      Game.spawnTimer += delta;
+      if (Game.spawnTimer >= Game.spawnInterval && Game.aliensRemaining > 0) {
+        spawnAlien();
+        Game.spawnTimer = 0;
+        Game.aliensRemaining--;
+      }
+      
+      Game.towers.forEach((tower, towerIndex) => {
+        if (time >= tower.lastFired + tower.fireRate && !Game.isAnswering) {
+          const target = findClosestAlien(tower, towerIndex);
+          if (target) {
+            Game.towerTargets[towerIndex] = target;
+            fireTower(tower, target, towerIndex);
+            tower.lastFired = time;
+          }
+        }
+      });
+      
+      Game.aliens.forEach((alien, index) => {
+        moveAlien(alien, delta);
+        alien.wobble += 0.1;
+        if (alien.pathIndex >= Game.pathPoints.length - 1) {
+          Game.aliens.splice(index, 1);
+          damageStation(10);
+        }
+      });
+      
+      Game.projectiles.forEach((proj, index) => {
+        proj.x += proj.vx * delta / 1000;
+        proj.y += proj.vy * delta / 1000;
+        proj.life -= delta;
+        
+        if (proj.targetAlien && Game.aliens.includes(proj.targetAlien)) {
+          const dist = Math.hypot(proj.x - proj.targetAlien.x, proj.y - proj.targetAlien.y);
+          if (dist < 30) {
+            proj.targetAlien.hp--;
+            if (proj.targetAlien.hp <= 0) {
+              const ai = Game.aliens.indexOf(proj.targetAlien);
+              if (ai > -1) Game.aliens.splice(ai, 1);
+              Game.score += 10;
+              Game.coins += 1;
+              updateHUD();
+            }
+            Game.projectiles.splice(index, 1);
+            return;
+          }
+        }
+        
+        if (proj.life <= 0 || proj.x > Game.width || proj.y > Game.height || proj.x < 0 || proj.y < 0) {
+          Game.projectiles.splice(index, 1);
+        }
+      });
+      
+      if (Game.aliens.length === 0 && Game.aliensRemaining === 0) {
+        completeWave();
+      }
+    }
+
+    function findClosestAlien(tower, towerIndex) {
+      let closest = null;
+      let minDist = tower.range;
+      Game.aliens.forEach(alien => {
+        const dist = Math.hypot(tower.x - alien.x, tower.y - alien.y);
+        if (dist < minDist && alien !== Game.towerTargets[(towerIndex + 1) % 3] && alien !== Game.towerTargets[(towerIndex + 2) % 3]) {
+          minDist = dist;
+          closest = alien;
+        }
+      });
+      if (!closest) {
+        Game.aliens.forEach(alien => {
+          const dist = Math.hypot(tower.x - alien.x, tower.y - alien.y);
+          if (dist < minDist) { minDist = dist; closest = alien; }
+        });
+      }
+      return closest;
+    }
+
+    function fireTower(tower, target, towerIndex) {
+      const questions = QUESTION_BANKS[Game.currentLevel] || QUESTION_BANKS.reception;
+      Game.currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+      Game.isAnswering = true;
+      Game.questionAnswered = false;
+      Game.firingTowerIndex = towerIndex;
+      showQuestionPanel();
+    }
+
+    function showQuestionPanel() {
+      const q = Game.currentQuestion;
+      els.questionLetter.textContent = q.letter;
+      els.questionText.textContent = q.question;
+      els.questionPanel.classList.remove('hidden');
+      els.timerFill.style.width = '100%';
+      els.hintBtn.classList.remove('available');
+      
+      els.answersGrid.innerHTML = '';
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = answer;
+        btn.addEventListener('click', () => handleAnswer(index, btn));
+        els.answersGrid.appendChild(btn);
+      });
+      
+      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
+      let timeLeft = 100;
+      Game.questionTimer = setInterval(() => {
+        timeLeft -= diff.timerSpeed;
+        els.timerFill.style.width = timeLeft + '%';
+        if (timeLeft <= 0) {
+          clearInterval(Game.questionTimer);
+          handleAnswer(-1, null);
+        }
+      }, 150);
+    }
+
+    function handleAnswer(index, btn) {
+      if (Game.questionAnswered) return;
+      Game.questionAnswered = true;
+      clearInterval(Game.questionTimer);
+      
+      const q = Game.currentQuestion;
+      const buttons = els.answersGrid.querySelectorAll('.answer-btn');
+      buttons.forEach(b => b.disabled = true);
+      
+      const isCorrect = index === q.correct;
+      
+      if (isCorrect && btn) {
+        btn.classList.add('correct');
+        fireProjectileAtTarget();
+      } else {
+        if (btn) btn.classList.add('wrong');
+        buttons[q.correct].classList.add('correct');
+        els.hintBtn.classList.add('available');
+      }
+      
+      setTimeout(() => {
+        els.questionPanel.classList.add('hidden');
+        Game.isAnswering = false;
+        Game.towerTargets[Game.firingTowerIndex] = null;
+      }, 800);
+    }
+
+    function fireProjectileAtTarget() {
+      const towerIndex = Game.firingTowerIndex;
+      const target = Game.towerTargets[towerIndex];
+      const tower = Game.towers[towerIndex];
+      
+      if (target && Game.aliens.includes(target)) {
+        const angle = Math.atan2(target.y - tower.y, target.x - tower.x);
+        Game.projectiles.push({
+          x: tower.x, y: tower.y,
+          vx: Math.cos(angle) * 500,
+          vy: Math.sin(angle) * 500,
+          life: 2000,
+          targetAlien: target
+        });
+      }
+    }
+
+    function showHint() {
+      if (els.hintBtn.classList.contains('available')) {
+        alert('💡 Hint: ' + Game.currentQuestion.hint);
+      }
+    }
+
+    function moveAlien(alien, delta) {
+      const target = Game.pathPoints[alien.pathIndex + 1];
+      if (!target) return;
+      const angle = Math.atan2(target.y - alien.y, target.x - alien.x);
+      alien.x += Math.cos(angle) * alien.speed * delta / 1000;
+      alien.y += Math.sin(angle) * alien.speed * delta / 1000;
+      alien.y += Math.sin(alien.wobble) * 0.3;
+      if (Math.hypot(target.x - alien.x, target.y - alien.y) < 10) alien.pathIndex++;
+    }
+
+    function damageStation(amount) {
+      Game.stationHealth -= amount;
+      const pct = Game.stationHealth / 100;
+      els.stationHealthFill.style.width = (pct * 100) + '%';
+      if (pct < 0.3) els.stationHealthFill.style.background = '#ff4a4a';
+      else if (pct < 0.6) els.stationHealthFill.style.background = '#ffaa4a';
+      Game.lives--;
+      updateHUD();
+      if (Game.stationHealth <= 0) gameOver();
+    }
+
+    function completeWave() {
+      Game.waveInProgress = false;
+      Game.wave++;
+      Game.coins += Game.lives * 5;
+      updateHUD();
+      setTimeout(() => startWave(), 2000);
+    }
+
+    function gameOver() {
+      Game.waveInProgress = false;
+      document.getElementById('final-wave').textContent = Game.wave;
+      document.getElementById('final-score').textContent = Game.score;
+      saveProgress();
+      setTimeout(() => switchScreen('gameover'), 500);
+    }
+
+    function restartGame() {
+      startLevel(Game.currentLevel);
+    }
+
+    window.showLevelSelect = showLevelSelect;
+    window.switchScreen = switchScreen;
+    window.restartGame = restartGame;
+
+    function togglePause() {
+      alert('🎮 Game Running\n\nAnswer questions to fire towers!');
+    }
+
+    function updateHUD() {
+      els.livesDisplay.textContent = Game.lives;
+      els.scoreDisplay.textContent = Game.score;
+      els.coinsDisplay.textContent = Game.coins;
+    }
+
+    function render() {
+      const ctx = els.ctx;
+      const w = Game.width, h = Game.height;
+      
+      ctx.fillStyle = '#0a0a1a';
+      ctx.fillRect(0, 0, w, h);
+      
+      ctx.strokeStyle = 'rgba(74, 74, 106, 0.5)';
+      ctx.lineWidth = 40;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(Game.pathPoints[0].x, Game.pathPoints[0].y);
+      Game.pathPoints.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.stroke();
+      
+      ctx.strokeStyle = 'rgba(74, 74, 106, 0.8)';
+      ctx.lineWidth = 30;
+      ctx.stroke();
+      
+      drawStation(w * 0.93, h * 0.5);
+      Game.towers.forEach(tower => drawTower(tower.x, tower.y));
+      Game.aliens.forEach(alien => drawAlien(alien));
+      Game.projectiles.forEach(proj => drawProjectile(proj));
+    }
+
+    function drawStation(x, y) {
+      const ctx = els.ctx;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = '#4a9eff';
+      ctx.beginPath();
+      ctx.arc(0, 0, 50, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#2a5fbf';
+      ctx.fillRect(-40, 0, 80, 30);
+      ctx.fillStyle = '#4aff6a';
+      ctx.beginPath();
+      ctx.arc(-20, -20, 8, 0, Math.PI * 2);
+      ctx.arc(0, -25, 8, 0, Math.PI * 2);
+      ctx.arc(20, -20, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawTower(x, y) {
+      const ctx = els.ctx;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = '#4a9eff';
+      ctx.fillRect(-20, -20, 40, 40);
+      ctx.fillStyle = '#6ab8ff';
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#2a5fbf';
+      ctx.fillRect(-5, -25, 10, 20);
+      ctx.restore();
+    }
+
+    function drawAlien(alien) {
+      const ctx = els.ctx;
+      ctx.save();
+      ctx.translate(alien.x, alien.y);
+      ctx.fillStyle = alien.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, alien.size/2, alien.size/3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(-10, -5, 8, 0, Math.PI * 2);
+      ctx.arc(10, -5, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#2a2a4a';
+      ctx.beginPath();
+      ctx.arc(-10, -5, 4, 0, Math.PI * 2);
+      ctx.arc(10, -5, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawProjectile(proj) {
+      const ctx = els.ctx;
+      ctx.save();
+      ctx.translate(proj.x, proj.y);
+      ctx.fillStyle = '#ffaa4a';
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem('galacticWordDefenders', JSON.stringify({
+          level: Game.currentLevel,
+          wave: Game.wave,
+          score: Game.score,
+          coins: Game.coins
+        }));
+      } catch(e) {}
+    }
+
+    function loadProgress() {
+      try {
+        const data = localStorage.getItem('galacticWordDefenders');
+        if (data) console.log('Saved progress found');
+      } catch(e) {}
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "galactic-word-defenders",
+  "version": "1.0.0",
+  "description": "Educational Tower Defence Game for KS1 & KS2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run copy-assets",
+    "copy-assets": "node scripts/copy-assets.js",
+    "preview": "vite preview",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "vite": "^5.1.0"
+  }
+}
