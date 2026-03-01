@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Base platform -->
+  <rect x="4" y="20" width="24" height="8" fill="#c0c0d0" stroke="#808090" stroke-width="2"/>
+  <rect x="6" y="22" width="20" height="4" fill="#d0d0e0"/>
+  
+  <!-- Tower body -->
+  <rect x="10" y="12" width="12" height="10" fill="#ffa500"/>
+  <rect x="12" y="14" width="8" height="6" fill="#ffb500"/>
+  
+  <!-- Launcher -->
+  <rect x="14" y="6" width="4" height="8" fill="#606080"/>
+  <rect x="15" y="7" width="2" height="5" fill="#707090"/>
+  
+  <!-- Punctuation chamber -->
+  <rect x="14" y="16" width="4" height="4" fill="#ff6a6a"/>
+  <rect x="15" y="17" width="2" height="2" fill="#ff7a7a"/>
+  
+  <!-- Side details -->
+  <rect x="8" y="14" width="2" height="6" fill="#808090"/>
+  <rect x="22" y="14" width="2" height="6" fill="#808090"/>
+</svg>

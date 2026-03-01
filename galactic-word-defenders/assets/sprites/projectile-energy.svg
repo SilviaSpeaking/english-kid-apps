@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- Energy beam -->
+  <rect x="7" y="2" width="2" height="12" fill="#4aff6a"/>
+  <rect x="6" y="4" width="1" height="8" fill="#7aff9a"/>
+  <rect x="9" y="4" width="1" height="8" fill="#7aff9a"/>
+  
+  <!-- Core -->
+  <rect x="7" y="6" width="2" height="4" fill="#9affba"/>
+  
+  <!-- Trail -->
+  <rect x="7" y="14" width="2" height="2" fill="#4aff6a" opacity="0.5"/>
+</svg>

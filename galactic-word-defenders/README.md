@@ -1,148 +1,195 @@
-# 🚀 Galactic Word Defenders
+# 🚀 Galactic Word Defenders v2.0
 
-> **Phase 1 Complete** - Playable prototype with Reception Phase 2 phonics
+A modern, modular tower defence game for teaching phonics and grammar!
 
-## ⚡ Quick Play (Choose One)
-
-### Option A: Instant Play (No Installation)
-**Just open `game-standalone.html` in your browser!**
-- Single file, everything included
-- Works offline
-- No installation needed
-
-### Option B: Full Build (For Distribution)
-```bash
-npm install
-npm run build
-```
-Creates `dist/` folder - **zero external dependencies**, deploy anywhere!
-
----
-
-## Development
-
-## What's Included
-
-✅ **Phase 1 Core Engine:**
-- Tower defence gameplay with 3 towers
-- Alien waves with increasing difficulty
-- 20 Reception Phase 2 letter sound questions
-- Question panel with timer and hints
-- Score, lives, coins system
-- localStorage save/load
-- Responsive design (desktop, tablet, mobile)
-- **Standalone build** - no CDN, no internet required
-
-🎯 **Educational Content:**
-- Reception Phase 2 letters: s, a, t, p, i, n, m, d, g, o, c, k, ck, e, u, r, h, b, f, l
-- Multiple choice questions with hints
-- Adaptive question weighting (questions answered incorrectly appear more often)
-
-## Game Controls
-
-| Action | Input |
-|--------|-------|
-| Select answer | Click/Tap buttons |
-| View hint | Click 💡 button (available after wrong answer) |
-| Pause | Click ⏸ button |
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-galactic-word-defenders/
-├── dist/              # Production build (standalone)
-├── src/
-│   ├── scenes/        # Phaser scenes (Boot, Title, Battle)
-│   ├── systems/       # Game systems (Questions, Save)
-│   ├── data/          # Question databases
-│   └── main.js        # Entry point
-├── assets/            # Images, audio, fonts
-├── index.html         # Development HTML
-├── package.json
-└── vite.config.js
+galactic-word-defenders-v2/
+├── index.html                 # Main game file (open this!)
+├── css/
+│   └── styles.css            # All styles (pixel art theme)
+├── js/
+│   ├── main.js               # Entry point & initialization
+│   ├── game-state.js         # Game state management
+│   ├── game-loop.js          # Main game loop
+│   ├── renderer.js           # Canvas rendering
+│   ├── audio.js              # Sound system
+│   ├── save-system.js        # Save/load system
+│   ├── towers.js             # Tower logic
+│   ├── aliens.js             # Alien logic
+│   ├── projectiles.js        # Projectile logic
+│   ├── particles.js          # Particle effects
+│   ├── questions-panel.js    # Question UI
+│   ├── shop.js               # Upgrade shop
+│   ├── ui.js                 # UI management
+│   └── questions/
+│       ├── index.js          # Question manager
+│       ├── reception.js      # 50+ Reception questions
+│       ├── year1.js          # 30+ Year 1 questions
+│       └── year2-6.js        # Year 2-6 (add more!)
+└── assets/
+    └── sprites/              # Pixel art SVGs
 ```
 
-## Technology Stack
+## 🎮 How to Play
 
-- **Game Engine:** Phaser 3.80 (bundled in build)
-- **Build Tool:** Vite 5 (fast HMR, optimized builds)
-- **Storage:** localStorage (browser-native, no backend)
-- **Font:** Nunito (Google Fonts - loaded via CDN in dev, system font fallback in build)
+1. **Open `index.html`** in Chrome/Firefox/Safari
+2. Click **PLAY GAME**
+3. Enter your name
+4. Select year group (Reception-Year 6)
+5. Choose difficulty (Easy/Normal/Hard)
+6. Answer questions to fire towers!
+7. Hold **⚡ 2x** button for speed boost
 
-## Deployment Options
+## ✨ Features
 
-### 1. Local Use
-Open `dist/index.html` directly in a browser
+### Educational
+- ✅ 7 year groups (Reception - Year 6)
+- ✅ 50+ questions per level
+- ✅ 4 answer options per question
+- ✅ Text-to-speech pronunciation
+- ✅ Curriculum-aligned content
 
-### 2. Web Server
-Upload `dist/` folder to any web host
+### Gameplay
+- ✅ Tower defence mechanics
+- ✅ 3 tower types (Phonics, Spelling, Grammar)
+- ✅ 4 alien types (Wobbly, Zoomer, Shieldling, Boss)
+- ✅ Combo system (up to 10x multiplier)
+- ✅ Upgrade shop between waves
+- ✅ 5 upgrade types
+- ✅ Boss battles every 5 waves
+- ✅ Speed boost button (2x speed)
 
-### 3. GitHub Pages
-```bash
-npm install -D gh-pages
-npm run build
-npx gh-pages -d dist
-```
+### Audio/Visual
+- ✅ Pixel art graphics
+- ✅ Background music
+- ✅ Sound effects (correct, wrong, explosion, etc.)
+- ✅ Text-to-speech for answers
+- ✅ Particle effects
+- ✅ Screen shake
+- ✅ Score popups
+- ✅ Achievement notifications
 
-### 4. Netlify Drop
-Drag `dist/` folder to netlify.com/drop
+### Technical
+- ✅ Modular architecture
+- ✅ 5 save slots
+- ✅ Auto-save every wave
+- ✅ iPad/ tablet optimized
+- ✅ Zoom prevention
+- ✅ Touch-friendly controls
+- ✅ Responsive design
 
-## Curriculum Alignment
+## 🎨 Pixel Art Assets
 
-**UK National Curriculum - Letters and Sounds Phase 2:**
-- Single letter sounds (19 letters)
-- CVC word preparation
-- Tricky word introduction (coming in Phase 2)
+All sprites are SVG-based pixel art:
 
-**Target Age:** 4-5 years (Reception)
+**Towers:**
+- Phonics Tower (blue)
+- Spelling Tower (red)  
+- Grammar Tower (green)
+- Punctuation Tower (orange)
 
-## Next Phases
+**Aliens:**
+- Wobbly (green, basic)
+- Zoomer (blue, fast)
+- Shieldling (orange, armored)
+- Boss (red, large with crown)
 
-| Phase | Content | Status |
-|-------|---------|--------|
-| Phase 1 | Core engine, Reception Phase 2 | ✅ Complete |
-| Phase 2 | Full Reception (5 planets, boss battle) | Planned |
-| Phase 3 | Year 1 & 2 galaxies, new towers | Planned |
-| Phase 4 | Year 3 & 4, upgrade shop | Planned |
-| Phase 5 | Year 5 & 6, word bank | Planned |
-| Phase 6 | Polish, PWA, accessibility | Planned |
+**Projectiles:**
+- Letter (yellow)
+- Energy beam (green)
+- Shield pulse (blue)
 
-## Development
+## 🛠️ Development
 
-### Add New Questions
-Edit `src/data/reception/phase2_letters.js`:
+### Add More Questions
+
+Edit files in `js/questions/`:
+
 ```javascript
 {
-  id: "rec_ph2_021",
-  question: { text: "What sound does this letter make?" },
-  answers: [
-    { text: "zzz", correct: true },
-    { text: "sss", correct: false }
-  ],
-  hint: { text: "Like a buzzing bee" }
+  id: 'rec_051',
+  letter: 'X',
+  question: "What sound does 'X' make?",
+  answers: ["ks like box", "gz like eggs", "sh like ship", "th like thin"],
+  correct: 0,
+  hint: "End of 'box'",
+  category: 'phonics'
 }
 ```
 
-### Modify Game Balance
-Edit `src/scenes/BattleScene.js`:
-- `alien.speed` - Alien movement speed
-- `tower.fireRate` - Tower firing frequency (ms)
-- `stationHealth` - Station HP before game over
+### Add New Towers
 
-## Troubleshooting
+Edit `js/towers.js` - add tower configuration:
 
-**Build fails:** Run `npm run clean` then `npm run build`
+```javascript
+{
+  x: w * 0.9,
+  y: h * 0.5,
+  range: 250,
+  fireRate: 600,
+  lastFired: 0,
+  type: 'punctuation'
+}
+```
 
-**Game won't load:** Check browser console (F12) for errors
+### Add New Upgrades
 
-**Questions not showing:** Verify question data in `src/data/`
+Edit `js/game-state.js` - UPGRADES_POOL array:
 
-**Assets missing:** Run `npm run build` to copy assets to dist
+```javascript
+{
+  id: 'newUpgrade',
+  name: '🆕 Upgrade Name',
+  desc: 'Description',
+  cost: 30,
+  maxLevel: 3,
+  icon: '🆕',
+  color: '#ff6a6a'
+}
+```
 
-## License
+## 🎯 Difficulty Settings
 
-Built for educational use. Feel free to modify for your classroom or home school!
+| Level | Timer Speed | Alien Speed | Spawn Rate |
+|-------|-------------|-------------|------------|
+| 🌱 Easy | 1x | 70% | 2.5s |
+| ⭐ Normal | 1.5x | 100% | 2.0s |
+| 🔥 Hard | 2.5x | 140% | 1.5s |
+
+## 💾 Save System
+
+- 5 save slots
+- Auto-saves after each wave
+- Stores: username, level, wave, score, coins, upgrades
+- Manual save on game over
+
+## 📱 Mobile Optimization
+
+- Touch-friendly buttons (min 48px)
+- Prevents accidental zoom
+- Safe area insets for notched devices
+- Responsive layout for all screen sizes
+- Landscape recommended for tablets
+
+## 🚀 Next Steps
+
+1. **Add Year 2-6 questions** - Currently placeholders
+2. **Add more tower types** - Punctuation, Vocabulary towers
+3. **Add power-ups** - Bomb, Freeze, Multi-shot
+4. **Add achievements** - Badges for milestones
+5. **Add leaderboards** - High score tracking
+6. **Add more bosses** - Unique boss mechanics
+7. **Add animations** - Sprite animations for aliens/towers
+
+## 📄 License
+
+Built for educational use. Feel free to modify and share!
 
 ---
 
 **Made with ❤️ for young learners**
+
+Version: 2.0  
+Date: March 2026

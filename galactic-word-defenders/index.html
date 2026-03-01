@@ -2,158 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Galactic Word Defenders</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; }
-    html, body { background: #0a0a1a; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; width: 100%; height: 100%; position: fixed; }
-    #game-container { width: 100vw; height: 100vh; position: relative; }
-    .screen { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; }
-    .screen.active { display: flex; }
-    .screen.hidden { display: none !important; }
-    .stars { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0 !important; pointer-events: none !important; }
-    .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 2s infinite; }
-    @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-    
-    #title-logo { font-size: clamp(28px, 6vw, 56px); font-weight: 800; color: #4a9eff; text-align: center; text-shadow: 0 0 30px #4a9eff; animation: pulse 2s infinite; z-index: 100 !important; position: relative; margin-bottom: 30px; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-    .btn { padding: clamp(12px, 3vw, 20px) clamp(20px, 5vw, 40px); font-size: clamp(16px, 3vw, 24px); font-weight: 700; color: #fff; background: linear-gradient(180deg, #4a9eff 0%, #2a5fbf 100%); border: none; border-radius: 15px; cursor: pointer; margin: 8px; transition: all 0.2s; position: relative; z-index: 100 !important; }
-    .btn:hover { transform: scale(1.05); }
-    .btn:active { transform: scale(0.95); }
-    .btn-secondary { background: linear-gradient(180deg, #6a6a8a 0%, #4a4a6a 100%); }
-    
-    .level-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; max-width: 800px; z-index: 2; padding: 20px; }
-    .level-card { background: linear-gradient(180deg, #1a1a3e 0%, #0d0d2b 100%); border: 3px solid #4a9eff; border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; z-index: 2; }
-    .level-card:hover { transform: scale(1.05); border-color: #7ab8ff; box-shadow: 0 0 20px rgba(74, 158, 255, 0.4); }
-    .level-icon { font-size: clamp(32px, 6vw, 48px); margin-bottom: 10px; }
-    .level-name { font-size: clamp(14px, 2.5vw, 18px); font-weight: 700; color: #fff; margin-bottom: 5px; }
-    .level-desc { font-size: clamp(11px, 2vw, 14px); color: #aaaaff; }
-    
-    #battle-screen { justify-content: flex-start; }
-    #battle-canvas { width: 100%; height: 100%; display: block; position: absolute; top: 0; left: 0; }
-    #hud { position: absolute; top: 10px; left: 10px; color: #fff; font-size: clamp(14px, 3vw, 20px); font-weight: 700; z-index: 10; display: flex; gap: 15px; flex-wrap: wrap; }
-    #hud span { background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 10px; }
-    #pause-btn, #back-btn { position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; font-size: 24px; background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; color: #fff; cursor: pointer; z-index: 10; }
-    #back-btn { right: 70px; }
-    #speed-btn { position: absolute; top: 70px; right: 10px; width: 60px; height: 60px; font-size: 16px; font-weight: 800; background: linear-gradient(180deg, #ffaa00 0%, #ff6a00 100%); border: 3px solid #fff; border-radius: 10px; color: #fff; cursor: pointer; z-index: 10; touch-action: manipulation; transition: all 0.1s; box-shadow: 0 4px 15px rgba(255,170,0,0.4); }
-    #speed-btn:active { transform: scale(0.9); }
-    
-    #level-indicator { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px 25px; border-radius: 20px; color: #fff; font-size: 18px; font-weight: 700; z-index: 10; display: flex; align-items: center; gap: 10px; }
-    #difficulty-badge { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 12px; font-size: 14px; }
-    #combo-display { background: linear-gradient(180deg, #ff6a00 0%, #ffaa00 100%); padding: 5px 15px; border-radius: 15px; font-weight: 800; animation: pulse 0.3s infinite; }
-    
-    #question-panel { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: min(95vw, 700px); background: linear-gradient(180deg, #1a1a3e 0%, #0d0d2b 100%); border: 4px solid #4a9eff; border-radius: 20px 20px 0 0; padding: clamp(15px, 3vw, 25px); z-index: 100; transition: transform 0.3s; }
-    #question-panel.hidden { transform: translateX(-50%) translateY(100%); }
-    .timer-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
-    .timer-fill { height: 100%; background: linear-gradient(90deg, #4aff6a, #ffaa4a); }
-    #question-text { color: #fff; font-size: clamp(18px, 4vw, 26px); font-weight: 700; text-align: center; margin-bottom: 15px; }
-    #question-letter { font-size: clamp(48px, 12vw, 96px); font-weight: 800; color: #4a9eff; text-align: center; margin-bottom: 15px; }
-    .answers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .answer-btn { background: linear-gradient(180deg, #4a9eff 0%, #2a5fbf 100%); border: 3px solid #7ab8ff; border-radius: 15px; padding: clamp(15px, 4vw, 25px); color: #fff; font-size: clamp(18px, 4vw, 24px); font-weight: 700; cursor: pointer; }
-    .answer-btn:hover { transform: scale(1.05); }
-    .answer-btn.correct { background: linear-gradient(180deg, #4aff6a 0%, #2abf4a 100%); }
-    .answer-btn.wrong { background: linear-gradient(180deg, #ff4a4a 0%, #bf2a2a 100%); }
-    #hint-btn { position: absolute; top: 10px; right: 10px; background: #ffaa4a; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; opacity: 0.5; }
-    #hint-btn.available { opacity: 1; animation: hintGlow 1s infinite; }
-    @keyframes hintGlow { 0%, 100% { box-shadow: 0 0 10px #ffaa4a; } 50% { box-shadow: 0 0 25px #ffaa4a; } }
-    
-    #boss-health-container { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); display: none; z-index: 10; }
-    #boss-health-bar { width: 300px; height: 20px; background: #333; border-radius: 10px; overflow: hidden; border: 3px solid #ff4a4a; }
-    #boss-health-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff4a4a, #ff884a); }
-    #boss-name { color: #ff4a4a; font-size: 18px; font-weight: 800; text-align: center; margin-top: 5px; }
-    
-    #station-health-container { position: absolute; top: 70px; right: 10px; z-index: 10; }
-    #station-health-bar { width: 140px; height: 12px; background: #333; border-radius: 6px; overflow: hidden; border: 2px solid #fff; }
-    #station-health-fill { width: 100%; height: 100%; background: #4aff6a; transition: width 0.3s, background 0.3s; }
-    #station-label { color: #fff; font-size: 12px; text-align: center; margin-top: 5px; }
-    
-    .popup { position: absolute; font-weight: 800; font-size: 24px; pointer-events: none; z-index: 150; animation: popupFloat 1s forwards; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-    @keyframes popupFloat { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
-    .combo-text { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); font-size: clamp(48px, 10vw, 96px); font-weight: 900; color: #ffaa00; text-shadow: 0 0 30px #ff6a00; pointer-events: none; z-index: 150; animation: comboPop 0.5s ease; }
-    @keyframes comboPop { 0% { opacity: 0; transform: translateX(-50%) scale(0.5); } 50% { opacity: 1; transform: translateX(-50%) scale(1.2); } 100% { opacity: 0; transform: translateX(-50%) scale(1); } }
-    .achievement { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ffaa00 0%, #ff6a00 100%); padding: 20px 40px; border-radius: 20px; color: #fff; font-size: clamp(24px, 5vw, 36px); font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 0 40px rgba(255,170,0,0.6); pointer-events: none; z-index: 150; animation: achievementPop 2s forwards; }
-    @keyframes achievementPop { 0% { opacity: 0; transform: translateX(-50%) scale(0.5); } 10% { opacity: 1; transform: translateX(-50%) scale(1.1); } 90% { opacity: 1; transform: translateX(-50%) scale(1); } 100% { opacity: 0; transform: translateX(-50%) scale(0.8); } }
-    
-    .save-slot { background: linear-gradient(180deg, #1a1a3e 0%, #0d0d2b 100%); border: 3px solid #4a9eff; border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 15px; margin: 10px 0; width: 100%; max-width: 500px; }
-    .save-slot:hover { transform: scale(1.02); border-color: #7ab8ff; box-shadow: 0 0 20px rgba(74, 158, 255, 0.4); }
-    .save-slot.empty { opacity: 0.7; border-style: dashed; }
-    .save-slot-icon { font-size: clamp(32px, 6vw, 48px); width: 60px; text-align: center; }
-    .save-slot-info { flex: 1; }
-    .save-slot-name { font-size: clamp(18px, 4vw, 22px); font-weight: 800; color: #fff; margin-bottom: 5px; }
-    .save-slot-details { font-size: clamp(12px, 2.5vw, 14px); color: #aaaaff; }
-    .save-slot-delete { background: #ff4a4a; border: none; color: #fff; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-size: 20px; }
-    
-    #username-input { padding: 15px 25px; font-size: clamp(18px, 4vw, 24px); border-radius: 15px; border: 3px solid #4a9eff; background: rgba(255,255,255,0.9); width: min(80vw, 300px); text-align: center; font-weight: 700; z-index: 1; margin-bottom: 20px; }
-    
-    #shop-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); max-width: 1000px; }
-    #start-wave-btn { z-index: 1; margin-top: 30px; display: none; }
-  </style>
+  <meta name="apple-mobile-web-app-title" content="Word Defenders">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <title>Galactic Word Defenders v2</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <div id="game-container">
+    <!-- Title Screen -->
     <div id="title-screen" class="screen active">
       <div class="stars" id="stars"></div>
-      <div id="title-logo">🚀 GALACTIC WORD<br>DEFENDERS</div>
-      <button class="btn" id="continue-btn" style="display:none;">▶ CONTINUE</button>
-      <button class="btn" id="play-btn">▶ NEW GAME</button>
-      <button class="btn btn-secondary" id="about-btn">ℹ️ ABOUT</button>
+      <div id="title-logo">
+        <span class="rocket">🚀</span>
+        <span class="title-text">GALACTIC WORD<br>DEFENDERS</span>
+        <span class="version">v2.0</span>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-primary" id="play-btn">▶ PLAY GAME</button>
+        <button class="btn btn-secondary" id="about-btn">ℹ️ ABOUT</button>
+      </div>
     </div>
     
+    <!-- Save Select Screen -->
     <div id="save-select-screen" class="screen hidden">
       <div class="stars"></div>
-      <h2 style="color:#fff;font-size:clamp(24px,5vw,36px);margin-bottom:20px;z-index:1;">Select Save Slot</h2>
-      <div id="save-slots" style="display:flex;flex-direction:column;gap:15px;width:100%;max-width:500px;z-index:1;padding:20px;align-items:center;"></div>
-      <button class="btn btn-secondary" id="back-to-title-btn" style="z-index:1;margin-top:20px;">← BACK</button>
+      <h2 class="screen-title">Select Save Slot</h2>
+      <div id="save-slots" class="save-slots-container"></div>
+      <button class="btn btn-secondary" id="back-to-title-from-save">← BACK</button>
     </div>
     
+    <!-- Username Screen -->
     <div id="username-screen" class="screen hidden">
       <div class="stars"></div>
-      <h2 style="color:#fff;font-size:clamp(24px,5vw,36px);margin-bottom:10px;z-index:1;">Enter Your Name</h2>
-      <p style="color:#aaaaff;font-size:clamp(14px,3vw,18px);margin-bottom:20px;z-index:1;">Saving to slot <span id="save-slot-num">1</span></p>
+      <h2 class="screen-title">Enter Your Name</h2>
+      <p class="screen-subtitle">Saving to slot <span id="save-slot-num">1</span></p>
       <input type="text" id="username-input" placeholder="Your name..." maxlength="12" autocomplete="off">
-      <div style="display:flex;gap:15px;z-index:1;flex-wrap:wrap;justify-content:center;">
-        <button class="btn" id="confirm-username-btn" onclick="confirmUsername()">▶ START GAME</button>
-        <button class="btn btn-secondary" id="cancel-username-btn" onclick="switchScreen('title')">← BACK</button>
+      <div class="button-group">
+        <button class="btn btn-primary" id="confirm-username-btn">▶ START GAME</button>
+        <button class="btn btn-secondary" id="cancel-username-btn">← BACK</button>
       </div>
     </div>
     
+    <!-- Level Select Screen -->
     <div id="level-select-screen" class="screen hidden">
       <div class="stars"></div>
-      <h2 style="color:#fff;font-size:clamp(24px,5vw,36px);margin-bottom:10px;z-index:1;">Select Your Year Group</h2>
-      <div style="color:#aaaaff;font-size:clamp(14px,3vw,18px);margin-bottom:20px;z-index:1;">Then choose difficulty</div>
-      <div style="display:flex;gap:10px;margin-bottom:20px;z-index:1;flex-wrap:wrap;justify-content:center;">
-        <button class="btn difficulty-btn" data-difficulty="easy" style="background:linear-gradient(180deg,#4aff6a 0%,#2abf4a 100%);">🌱 Easy</button>
-        <button class="btn difficulty-btn" data-difficulty="normal" style="background:linear-gradient(180deg,#4a9eff 0%,#2a5fbf 100%);">⭐ Normal</button>
-        <button class="btn difficulty-btn" data-difficulty="hard" style="background:linear-gradient(180deg,#ff6a6a 0%,#bf2a2a 100%);">🔥 Hard</button>
+      <h2 class="screen-title">Select Your Year Group</h2>
+      <p class="screen-subtitle">Then choose difficulty</p>
+      <div class="difficulty-buttons">
+        <button class="btn difficulty-btn" data-difficulty="easy">🌱 Easy</button>
+        <button class="btn difficulty-btn selected" data-difficulty="normal">⭐ Normal</button>
+        <button class="btn difficulty-btn" data-difficulty="hard">🔥 Hard</button>
       </div>
       <div class="level-grid" id="level-grid"></div>
-      <button class="btn btn-secondary" id="back-to-title-btn" style="z-index:1;margin-top:20px;">← BACK</button>
+      <button class="btn btn-secondary" id="back-to-title-from-level">← BACK</button>
     </div>
     
+    <!-- Battle Screen -->
     <div id="battle-screen" class="screen hidden">
       <canvas id="battle-canvas"></canvas>
-      <div id="level-indicator">🌟 Reception - Wave <span id="wave-num">1</span> <span id="difficulty-badge" style="background:#4a9eff">⭐ Normal</span></div>
+      
+      <!-- HUD -->
       <div id="hud">
-        <span>❤️ <span id="lives-display">3</span></span>
-        <span>⭐ <span id="score-display">0</span></span>
-        <span>🪙 <span id="coins-display">0</span></span>
-        <span id="combo-display" style="display:none;">🔥 <span id="combo-count">0</span>x</span>
-        <span>🔊 <button id="sound-btn" style="background:none;border:none;font-size:18px;cursor:pointer;">🔊</button></span>
+        <span class="hud-item">❤️ <span id="lives-display">3</span></span>
+        <span class="hud-item">⭐ <span id="score-display">0</span></span>
+        <span class="hud-item">🪙 <span id="coins-display">0</span></span>
+        <span class="hud-item" id="combo-display" style="display:none;">🔥 <span id="combo-count">0</span>x</span>
+        <span class="hud-item">🔊 <button id="sound-btn">🔊</button></span>
       </div>
-      <button id="back-btn">←</button>
-      <button id="pause-btn">⏸</button>
-      <button id="speed-btn">⚡ 2x</button>
-      <div id="boss-health-container">
-        <div id="boss-health-bar"><div id="boss-health-fill"></div></div>
-        <div id="boss-name">BOSS</div>
+      
+      <!-- Level Indicator -->
+      <div id="level-indicator">
+        <span id="level-name">🌟 Reception</span>
+        <span class="separator">-</span>
+        <span>Wave <span id="wave-num">1</span></span>
+        <span id="difficulty-badge">⭐ Normal</span>
       </div>
+      
+      <!-- Controls -->
+      <button id="back-btn" class="control-btn">←</button>
+      <button id="pause-btn" class="control-btn">⏸</button>
+      <button id="speed-btn" class="control-btn">⚡ 2x</button>
+      
+      <!-- Station Health -->
       <div id="station-health-container">
         <div id="station-health-bar"><div id="station-health-fill"></div></div>
         <div id="station-label">STATION</div>
       </div>
-      <div id="wave-notification" style="position:absolute;top:20%;left:50%;transform:translateX(-50%);font-size:clamp(32px,8vw,72px);font-weight:800;color:#4a9eff;opacity:0;z-index:50;">WAVE 1</div>
+      
+      <!-- Boss Health (hidden by default) -->
+      <div id="boss-health-container">
+        <div id="boss-health-bar"><div id="boss-health-fill"></div></div>
+        <div id="boss-name">BOSS</div>
+      </div>
+      
+      <!-- Wave Notification -->
+      <div id="wave-notification">WAVE 1</div>
+      
+      <!-- Question Panel -->
       <div id="question-panel" class="hidden">
         <button id="hint-btn">💡</button>
         <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
@@ -163,1151 +113,55 @@
       </div>
     </div>
     
+    <!-- Shop Screen -->
     <div id="shop-screen" class="screen hidden">
       <div class="stars"></div>
-      <h2 style="color:#fff;font-size:clamp(28px,6vw,48px);margin-bottom:10px;z-index:1;text-shadow:0 0 20px #4a9eff;">🛠️ UPGRADE SHOP</h2>
-      <p style="color:#aaaaff;font-size:clamp(16px,3vw,20px);margin-bottom:20px;z-index:1;">Choose <span id="shop-picks-remaining">3</span> upgrades</p>
-      <div id="shop-coins" style="color:#ffaa4a;font-size:clamp(20px,4vw,28px);font-weight:800;margin-bottom:30px;z-index:1;">🪙 <span id="shop-coin-display">0</span></div>
+      <h2 class="screen-title">🛠️ UPGRADE SHOP</h2>
+      <p class="screen-subtitle">Choose <span id="shop-picks-remaining">3</span> upgrades</p>
+      <div id="shop-coins">🪙 <span id="shop-coin-display">0</span></div>
       <div class="level-grid" id="shop-grid"></div>
-      <button class="btn" id="start-wave-btn">▶ START WAVE</button>
+      <button class="btn btn-primary" id="start-wave-btn">▶ START WAVE</button>
     </div>
     
+    <!-- Game Over Screen -->
     <div id="gameover-screen" class="screen hidden">
       <div class="stars"></div>
-      <div id="gameover-text" style="font-size:clamp(32px,8vw,64px);font-weight:800;color:#ff4a4a;margin-bottom:20px;">GAME OVER</div>
-      <div id="gameover-player" style="color:#4a9eff;font-size:clamp(20px,4vw,28px);margin-bottom:10px;">👤 <span id="final-username">Player</span></div>
-      <div id="gameover-wave" style="font-size:clamp(20px,4vw,32px);color:#fff;margin-bottom:10px;">Wave Reached: <span id="final-wave">1</span></div>
-      <div id="gameover-score" style="color:#fff;font-size:20px;margin-bottom:10px;">Score: <span id="final-score">0</span></div>
-      <div id="gameover-coins" style="color:#ffaa4a;font-size:18px;margin-bottom:10px;">🪙 Coins: <span id="final-coins">0</span></div>
-      <div id="gameover-saved" style="color:#4aff6a;font-size:14px;margin-bottom:30px;">💾 Saved to Slot <span id="saved-slot-num">1</span></div>
-      <button class="btn" onclick="restartGame()">🔄 PLAY AGAIN</button>
-      <button class="btn btn-secondary" onclick="showSaveSlots()" style="margin-top:15px;">💾 SAVE & EXIT</button>
+      <div id="gameover-text">GAME OVER</div>
+      <div id="gameover-player">👤 <span id="final-username">Player</span></div>
+      <div id="gameover-stats">
+        <div>Wave Reached: <span id="final-wave">1</span></div>
+        <div>Score: <span id="final-score">0</span></div>
+        <div>🪙 Coins: <span id="final-coins">0</span></div>
+      </div>
+      <div id="gameover-saved">💾 Saved to Slot <span id="saved-slot-num">1</span></div>
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="restartGame()">🔄 PLAY AGAIN</button>
+        <button class="btn btn-secondary" onclick="showSaveSlots()">💾 SAVE & EXIT</button>
+      </div>
     </div>
   </div>
 
-  <script>
-    // Question Banks
-    const QUESTION_BANKS = {
-      reception: [
-        { id: 'r1', letter: 'M', question: "What sound does 'M' make?", answers: ["mmm like mummy", "aaa like ant"], correct: 0, hint: { text: "Think 'mummy'" } },
-        { id: 'r2', letter: 'M', question: "Which word starts with 'M'?", answers: ["moon", "sun"], correct: 0, hint: { text: "Night sky" } },
-        { id: 'r3', letter: 'A', question: "What sound does 'A' make?", answers: ["aaa like ant", "ooo like octopus"], correct: 0, hint: { text: "Open wide" } },
-        { id: 'r4', letter: 'A', question: "Which word starts with 'A'?", answers: ["apple", "ball"], correct: 0, hint: { text: "Red fruit" } },
-        { id: 'r5', letter: 'T', question: "What sound does 'T' make?", answers: ["ttt like tiger", "mmm like monkey"], correct: 0, hint: { text: "Striped animal" } },
-        { id: 'r6', letter: 'T', question: "Which word starts with 'T'?", answers: ["train", "car"], correct: 0, hint: { text: "On tracks" } },
-        { id: 'r7', letter: 'S', question: "What sound does 'S' make?", answers: ["sss like snake", "bbb like bear"], correct: 0, hint: { text: "Hissy sound" } },
-        { id: 'r8', letter: 'S', question: "Which word starts with 'S'?", answers: ["spider", "fly"], correct: 0, hint: { text: "Eight legs" } },
-        { id: 'r9', letter: 'P', question: "What sound does 'P' make?", answers: ["ppp like pig", "ddd like dog"], correct: 0, hint: { text: "Says oink" } },
-        { id: 'r10', letter: 'P', question: "Which word starts with 'P'?", answers: ["penguin", "ostrich"], correct: 0, hint: { text: "Can't fly" } },
-        { id: 'r11', letter: 'N', question: "What sound does 'N' make?", answers: ["nnn like nest", "ttt like net"], correct: 0, hint: { text: "Birds live here" } },
-        { id: 'r12', letter: 'N', question: "Which word starts with 'N'?", answers: ["nose", "ear"], correct: 0, hint: { text: "You smell with this" } },
-        { id: 'r13', letter: 'I', question: "What sound does 'I' make?", answers: ["iii like insect", "aaa like alligator"], correct: 0, hint: { text: "Tiny bug" } },
-        { id: 'r14', letter: 'I', question: "Which word starts with 'I'?", answers: ["ice", "fire"], correct: 0, hint: { text: "Very cold" } },
-        { id: 'r15', letter: 'D', question: "What sound does 'D' make?", answers: ["ddd like duck", "ppp like pig"], correct: 0, hint: { text: "Says quack" } },
-        { id: 'r16', letter: 'D', question: "Which word starts with 'D'?", answers: ["dinosaur", "lizard"], correct: 0, hint: { text: "Extinct giant" } },
-        { id: 'r17', letter: 'G', question: "What sound does 'G' make?", answers: ["ggg like goat", "ttt like cat"], correct: 0, hint: { text: "Says maaa" } },
-        { id: 'r18', letter: 'G', question: "Which word starts with 'G'?", answers: ["grape", "orange"], correct: 0, hint: { text: "Purple fruit" } },
-        { id: 'r19', letter: 'O', question: "What sound does 'O' make?", answers: ["ooo like octopus", "eee like elephant"], correct: 0, hint: { text: "Eight arms" } },
-        { id: 'r20', letter: 'O', question: "Which word starts with 'O'?", answers: ["owl", "eagle"], correct: 0, hint: { text: "Night bird" } },
-        { id: 'r21', letter: 'C', question: "What sound does 'C' make?", answers: ["ccc like cat", "mmm like mat"], correct: 0, hint: { text: "Says meow" } },
-        { id: 'r22', letter: 'K', question: "What sound does 'K' make?", answers: ["kkk like kite", "sss like snake"], correct: 0, hint: { text: "Flies high" } },
-        { id: 'r23', letter: 'CK', question: "What sound does 'CK' make?", answers: ["kkk like duck", "ppp like puck"], correct: 0, hint: { text: "End of duck" } },
-        { id: 'r24', letter: 'E', question: "What sound does 'E' make?", answers: ["eee like egg", "iii like ink"], correct: 0, hint: { text: "Chicken lays this" } },
-        { id: 'r25', letter: 'U', question: "What sound does 'U' make?", answers: ["uuu like umbrella", "ooo like orange"], correct: 0, hint: { text: "Rain protection" } },
-        { id: 'r26', letter: 'R', question: "What sound does 'R' make?", answers: ["rrr like rabbit", "nnn like nut"], correct: 0, hint: { text: "Hop hop" } },
-        { id: 'r27', letter: 'H', question: "What sound does 'H' make?", answers: ["hhh like hat", "rrr rat"], correct: 0, hint: { text: "On your head" } },
-        { id: 'r28', letter: 'B', question: "What sound does 'B' make?", answers: ["bbb like ball", "ttt like tall"], correct: 0, hint: { text: "Round toy" } },
-        { id: 'r29', letter: 'F', question: "What sound does 'F' make?", answers: ["fff like fish", "lll like dish"], correct: 0, hint: { text: "Swims in water" } },
-        { id: 'r30', letter: 'L', question: "What sound does 'L' make?", answers: ["lll like lion", "mmm like ion"], correct: 0, hint: { text: "King of jungle" } }
-      ],
-      year1: [
-        { id: 'y1_1', letter: 'AY', question: "What sound does 'ay' make?", answers: ["ay like play", "ee like see"], correct: 0, hint: { text: "Like 'play'" } },
-        { id: 'y1_2', letter: 'OU', question: "What sound does 'ou' make?", answers: ["ow like out", "oo like moon"], correct: 0, hint: { text: "Like 'out'" } },
-        { id: 'y1_3', letter: 'IE', question: "What sound does 'ie' make?", answers: ["eye like pie", "ee like tea"], correct: 0, hint: { text: "Like 'pie'" } },
-        { id: 'y1_4', letter: 'EA', question: "What sound does 'ea' make?", answers: ["ee like tea", "aa like cat"], correct: 0, hint: { text: "Hot drink" } },
-        { id: 'y1_5', letter: 'OY', question: "What sound does 'oy' make?", answers: ["oy like boy", "oo like too"], correct: 0, hint: { text: "Like 'boy'" } }
-      ],
-      year2: [
-        { id: 'y2_1', letter: '?', question: "Add punctuation: 'What is your name'", answers: ["?", "."], correct: 0, hint: { text: "It's a question" } },
-        { id: 'y2_2', letter: '.', question: "Add punctuation: 'I like cats'", answers: [".", "?"], correct: 0, hint: { text: "Normal sentence" } },
-        { id: 'y2_3', letter: '!', question: "Add punctuation: 'Wow'", answers: ["!", "."], correct: 0, hint: { text: "Surprise!" } },
-        { id: 'y2_4', letter: "'S", question: "Where does apostrophe go: 'the cats toy'", answers: ["cat's", "cats'"], correct: 0, hint: { text: "One cat owns it" } },
-        { id: 'y2_5', letter: 'ING', question: "Add -ing to 'jump'", answers: ["jumping", "jump"], correct: 0, hint: { text: "Doing now" } }
-      ]
-    };
-
-    const LEVELS = [
-      { id: 'reception', name: 'Reception', icon: '🌟', desc: 'Ages 4-5 | Letter Sounds', color: '#4aff6a' },
-      { id: 'year1', name: 'Year 1', icon: '🌙', desc: 'Ages 5-6 | Digraphs', color: '#4a9eff' },
-      { id: 'year2', name: 'Year 2', icon: '☀️', desc: 'Ages 6-7 | Grammar', color: '#ffaa4a' },
-      { id: 'year3', name: 'Year 3', icon: '🌍', desc: 'Ages 7-8 | Prefixes', color: '#aa6aff' },
-      { id: 'year4', name: 'Year 4', icon: '🪐', desc: 'Ages 8-9 | Homophones', color: '#ff6a6a' },
-      { id: 'year5', name: 'Year 5', icon: '⭐', desc: 'Ages 9-10 | Clauses', color: '#ffaaff' },
-      { id: 'year6', name: 'Year 6', icon: '🌌', desc: 'Ages 10-11 | Advanced', color: '#aaffff' }
-    ];
-
-    const DIFFICULTY_SETTINGS = {
-      easy: { timerSpeed: 1, alienSpeed: 0.7, spawnRate: 2500, label: '🌱 Easy', color: '#4aff6a' },
-      normal: { timerSpeed: 1.5, alienSpeed: 1, spawnRate: 2000, label: '⭐ Normal', color: '#4a9eff' },
-      hard: { timerSpeed: 2.5, alienSpeed: 1.4, spawnRate: 1500, label: '🔥 Hard', color: '#ff6a6a' }
-    };
-
-    const UPGRADES_POOL = [
-      { id: 'slowAliens', name: '🐌 Slow Aliens', desc: 'Aliens move 20% slower', cost: 20, maxLevel: 3, icon: '🐌' },
-      { id: 'powerHits', name: '💪 Power Hits', desc: 'Projectiles do more damage', cost: 25, maxLevel: 3, icon: '💪' },
-      { id: 'bulletSpeed', name: '⚡ Fast Bullets', desc: 'Projectiles travel faster', cost: 15, maxLevel: 3, icon: '⚡' },
-      { id: 'towerRange', name: '📡 Tower Range', desc: 'Towers see farther', cost: 20, maxLevel: 3, icon: '📡' },
-      { id: 'stationHeal', name: '❤️ Repair Station', desc: 'Restore 30 HP', cost: 25, maxLevel: 99, icon: '❤️' }
-    ];
-
-    const Game = {
-      lives: 3, score: 0, coins: 0, wave: 1, stationHealth: 100,
-      aliens: [], towers: [], projectiles: [], particles: [],
-      currentQuestion: null, isAnswering: false, questionAnswered: false,
-      spawnTimer: 0, aliensRemaining: 0, waveInProgress: false,
-      lastTime: 0, canvas: null, ctx: null, width: 0, height: 0,
-      pathPoints: [], towerTargets: [null, null, null],
-      currentLevel: 'reception', difficulty: 'normal',
-      combo: 0, maxCombo: 0, comboTimer: 0, screenShake: 0,
-      bossActive: false, currentBossMaxHp: 0,
-      upgrades: { slowAliens: 0, powerHits: 0, bulletSpeed: 0, towerRange: 0 },
-      inShop: false, currentSaveSlot: -1, playerUsername: '',
-      askedQuestions: [], speedBoost: false
-    };
-
-    const SAVE_SYSTEM = {
-      slots: [],
-      maxSlots: 5,
-      load() {
-        try {
-          const data = localStorage.getItem('galacticWordDefenders_saves');
-          this.slots = data ? JSON.parse(data) : Array(5).fill(null);
-        } catch(e) { this.slots = Array(5).fill(null); }
-      },
-      save(slotIndex, data) {
-        this.slots[slotIndex] = { ...data, savedAt: new Date().toISOString() };
-        try { localStorage.setItem('galacticWordDefenders_saves', JSON.stringify(this.slots)); } catch(e) {}
-      },
-      delete(slotIndex) { this.slots[slotIndex] = null; try { localStorage.setItem('galacticWordDefenders_saves', JSON.stringify(this.slots)); } catch(e) {} },
-      get(slotIndex) { return this.slots[slotIndex]; }
-    };
-
-    const AudioSys = {
-      enabled: true, ctx: null, isPlaying: false,
-      init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
-      playTone(freq, type, duration, vol = 0.1) {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
-        osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.frequency.value = freq; osc.type = type;
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-        osc.start(); osc.stop(this.ctx.currentTime + duration);
-      },
-      playCorrect() { this.playTone(523, 'sine', 0.3); setTimeout(() => this.playTone(659, 'sine', 0.3), 100); setTimeout(() => this.playTone(784, 'sine', 0.4), 200); },
-      playWrong() { this.playTone(200, 'sawtooth', 0.3); setTimeout(() => this.playTone(150, 'sawtooth', 0.4), 150); },
-      playFire() { this.playTone(400, 'square', 0.15, 0.08); },
-      playExplosion() { this.playTone(100, 'sawtooth', 0.3, 0.12); },
-      playHit() { this.playTone(300, 'triangle', 0.1, 0.1); },
-      playWaveStart() { [262, 330, 392, 523].forEach((f, i) => setTimeout(() => this.playTone(f, 'sine', 0.5, 0.15), i * 150)); },
-      playGameOver() { [523, 466, 415, 392, 311, 262].forEach((f, i) => setTimeout(() => this.playTone(f, 'sawtooth', 0.4, 0.1), i * 200)); },
-      startBGM() { if (!this.enabled || this.isPlaying) return; this.isPlaying = true; this.bgmLoop(); },
-      bgmLoop() { if (!this.isPlaying) return; const notes = [262, 0, 294, 0, 330, 0, 349, 0]; let i = 0;
-        const play = () => { if (!this.isPlaying) return; if (notes[i] > 0) this.playTone(notes[i], 'sine', 0.3, 0.05); i = (i + 1) % notes.length; setTimeout(play, 250); };
-        play();
-      },
-      stopBGM() { this.isPlaying = false; },
-      toggle() { this.enabled = !this.enabled; if (this.enabled && this.ctx) this.ctx.resume(); return this.enabled; }
-    };
-
-    const TTS = {
-      enabled: true,
-      speak(text) {
-        if (!this.enabled || !window.speechSynthesis) return;
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 0.9; u.pitch = 1.1;
-        window.speechSynthesis.speak(u);
-      }
-    };
-
-    const els = {};
-
-    function init() {
-      document.addEventListener('gesturestart', e => e.preventDefault());
-      document.addEventListener('gesturechange', e => e.preventDefault());
-      document.addEventListener('gestureend', e => e.preventDefault());
-      
-      let lastTouchEnd = 0;
-      document.addEventListener('touchend', e => {
-        if (Date.now() - lastTouchEnd <= 300) e.preventDefault();
-        lastTouchEnd = Date.now();
-      });
-      
-      SAVE_SYSTEM.load();
-      const hasSaves = SAVE_SYSTEM.slots.some(s => s !== null);
-      const continueBtn = document.getElementById('continue-btn');
-      if (continueBtn) continueBtn.style.display = hasSaves ? 'inline-block' : 'none';
-      
-      els.titleScreen = document.getElementById('title-screen');
-      els.saveSelectScreen = document.getElementById('save-select-screen');
-      els.usernameScreen = document.getElementById('username-screen');
-      els.shopScreen = document.getElementById('shop-screen');
-      els.battleScreen = document.getElementById('battle-screen');
-      els.gameoverScreen = document.getElementById('gameover-screen');
-      els.levelSelectScreen = document.getElementById('level-select-screen');
-      els.levelIndicator = document.getElementById('level-indicator');
-      els.questionPanel = document.getElementById('question-panel');
-      els.questionLetter = document.getElementById('question-letter');
-      els.questionText = document.getElementById('question-text');
-      els.answersGrid = document.getElementById('answers-grid');
-      els.timerFill = document.getElementById('timer-fill');
-      els.hintBtn = document.getElementById('hint-btn');
-      els.livesDisplay = document.getElementById('lives-display');
-      els.scoreDisplay = document.getElementById('score-display');
-      els.coinsDisplay = document.getElementById('coins-display');
-      els.stationHealthFill = document.getElementById('station-health-fill');
-      els.waveNotification = document.getElementById('wave-notification');
-      els.waveNum = document.getElementById('wave-num');
-      els.canvas = document.getElementById('battle-canvas');
-      els.ctx = els.canvas.getContext('2d');
-      
-      document.getElementById('play-btn').addEventListener('click', e => { e.preventDefault(); showSaveSlots(); });
-      if (continueBtn) continueBtn.addEventListener('click', e => { e.preventDefault(); showSaveSlots(); });
-      document.getElementById('about-btn').addEventListener('click', e => { e.preventDefault(); alert('📚 Galactic Word Defenders\n\nAges 4-11 (Reception to Year 6)\n\nChoose your year group!'); });
-      document.getElementById('back-to-title-btn').addEventListener('click', () => switchScreen('title'));
-      document.getElementById('pause-btn').addEventListener('click', togglePause);
-      document.getElementById('back-btn').addEventListener('click', showLevelSelect);
-      els.hintBtn.addEventListener('click', () => { if (els.hintBtn.classList.contains('available') && Game.currentQuestion) alert('💡 Hint: ' + Game.currentQuestion.hint.text); });
-      document.getElementById('sound-btn').addEventListener('click', toggleSound);
-      document.getElementById('start-wave-btn').addEventListener('click', closeShop);
-      document.getElementById('cancel-username-btn').addEventListener('click', () => switchScreen('title'));
-      document.getElementById('username-input').addEventListener('keypress', e => { if (e.key === 'Enter') confirmUsername(); });
-      
-      // Speed boost button
-      const speedBtn = document.getElementById('speed-btn');
-      speedBtn.addEventListener('mousedown', () => { Game.speedBoost = true; speedBtn.style.background = 'linear-gradient(180deg,#ffcc00 0%,#ff8800 100%)'; });
-      speedBtn.addEventListener('mouseup', () => { Game.speedBoost = false; speedBtn.style.background = 'linear-gradient(180deg,#ffaa00 0%,#ff6a00 100%)'; });
-      speedBtn.addEventListener('mouseleave', () => { Game.speedBoost = false; speedBtn.style.background = 'linear-gradient(180deg,#ffaa00 0%,#ff6a00 100%)'; });
-      speedBtn.addEventListener('touchstart', e => { e.preventDefault(); Game.speedBoost = true; speedBtn.style.background = 'linear-gradient(180deg,#ffcc00 0%,#ff8800 100%)'; });
-      speedBtn.addEventListener('touchend', e => { e.preventDefault(); Game.speedBoost = false; speedBtn.style.background = 'linear-gradient(180deg,#ffaa00 0%,#ff6a00 100%)'; });
-      
-      createStars();
-      window.addEventListener('resize', resizeCanvas);
-      resizeCanvas();
-    }
-
-    function createStars() {
-      document.querySelectorAll('.stars').forEach(container => {
-        if (container.children.length === 0) {
-          for (let i = 0; i < 100; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
-            star.style.animationDelay = Math.random() * 2 + 's';
-            container.appendChild(star);
-          }
-        }
-      });
-    }
-
-    function switchScreen(name) {
-      ['title', 'saveSelect', 'username', 'levelSelect', 'battle', 'shop', 'gameover'].forEach(s => {
-        const el = els[s + 'Screen'];
-        if (el) { el.classList.add('hidden'); el.classList.remove('active'); }
-      });
-      const target = els[name + 'Screen'];
-      if (target) { target.classList.remove('hidden'); target.classList.add('active'); }
-    }
-
-    function showSaveSlots() {
-      SAVE_SYSTEM.load();
-      const hasSaves = SAVE_SYSTEM.slots.some(s => s !== null);
-      const continueBtn = document.getElementById('continue-btn');
-      if (continueBtn) continueBtn.style.display = hasSaves ? 'inline-block' : 'none';
-      
-      els.titleScreen.classList.add('hidden');
-      els.titleScreen.classList.remove('active');
-      els.saveSelectScreen.classList.remove('hidden');
-      els.saveSelectScreen.classList.add('active');
-      
-      const container = document.getElementById('save-slots');
-      container.innerHTML = '';
-      
-      for (let i = 0; i < SAVE_SYSTEM.maxSlots; i++) {
-        const save = SAVE_SYSTEM.get(i);
-        const slotEl = document.createElement('div');
-        slotEl.className = 'save-slot' + (save ? '' : ' empty');
-        
-        if (save) {
-          slotEl.innerHTML = `<div class="save-slot-icon">👤</div><div class="save-slot-info"><div class="save-slot-name">${escapeHtml(save.username)}</div><div class="save-slot-details">${save.level} | Wave ${save.wave} | Score: ${save.score}</div><div class="save-slot-details">💰 ${save.coins} coins</div></div><button class="save-slot-delete" data-slot="${i}">🗑</button>`;
-          slotEl.addEventListener('click', e => { if (!e.target.classList.contains('save-slot-delete')) loadGame(i); });
-        } else {
-          slotEl.innerHTML = `<div class="save-slot-icon">➕</div><div class="save-slot-info"><div class="save-slot-name">Empty Slot ${i + 1}</div><div class="save-slot-details">Click to create new game</div></div>`;
-          slotEl.addEventListener('click', () => selectSaveSlot(i));
-        }
-        container.appendChild(slotEl);
-      }
-      
-      document.querySelectorAll('.save-slot-delete').forEach(btn => {
-        btn.addEventListener('click', e => {
-          e.stopPropagation();
-          const slot = parseInt(btn.dataset.slot);
-          if (confirm(`Delete save slot ${slot + 1}?`)) { SAVE_SYSTEM.delete(slot); showSaveSlots(); }
-        });
-      });
-    }
-
-    let selectedSaveSlot = -1;
-    function selectSaveSlot(slotIndex) {
-      selectedSaveSlot = slotIndex;
-      document.getElementById('save-slot-num').textContent = slotIndex + 1;
-      document.getElementById('username-input').value = '';
-      els.saveSelectScreen.classList.add('hidden');
-      els.usernameScreen.classList.remove('hidden');
-      els.usernameScreen.classList.add('active');
-      setTimeout(() => document.getElementById('username-input').focus(), 100);
-    }
-
-    function confirmUsername() {
-      const username = document.getElementById('username-input').value.trim();
-      if (!username) { alert('Please enter your name!'); return; }
-      els.usernameScreen.classList.add('hidden');
-      els.usernameScreen.classList.remove('active');
-      showLevelSelect();
-      Game.currentSaveSlot = selectedSaveSlot;
-      Game.playerUsername = username;
-    }
-
-    function loadGame(slotIndex) {
-      const save = SAVE_SYSTEM.get(slotIndex);
-      if (!save) { alert('No save data!'); return; }
-      
-      Game.currentSaveSlot = slotIndex;
-      Game.playerUsername = save.username;
-      Game.currentLevel = save.level;
-      Game.difficulty = save.difficulty || 'normal';
-      
-      els.saveSelectScreen.classList.add('hidden');
-      els.battleScreen.classList.remove('hidden');
-      els.battleScreen.classList.add('active');
-      
-      AudioSys.init();
-      setTimeout(() => AudioSys.startBGM(), 1000);
-      
-      Game.lives = Math.max(1, save.lives || 3);
-      Game.score = Math.max(0, save.score || 0);
-      Game.coins = Math.max(0, save.coins || 0);
-      Game.wave = Math.max(1, save.wave || 1);
-      Game.stationHealth = Math.max(20, save.stationHealth || 100);
-      Game.upgrades = save.upgrades || { slowAliens: 0, powerHits: 0, bulletSpeed: 0, towerRange: 0 };
-      Game.aliens = []; Game.projectiles = []; Game.particles = [];
-      Game.isAnswering = false; Game.questionAnswered = false;
-      Game.towerTargets = [null, null, null];
-      Game.combo = 0; Game.maxCombo = 0; Game.comboTimer = 0; Game.screenShake = 0; Game.bossActive = false; Game.askedQuestions = [];
-      
-      resizeCanvas();
-      updateHUD(); updateCombo();
-      els.stationHealthFill.style.width = (Game.stationHealth) + '%';
-      els.stationHealthFill.style.background = '#4aff6a';
-      
-      setupTowers();
-      startWave();
-      Game.lastTime = performance.now();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function showLevelSelect() {
-      els.saveSelectScreen.classList.add('hidden');
-      els.levelSelectScreen.classList.remove('hidden');
-      els.levelSelectScreen.classList.add('active');
-      
-      const grid = document.getElementById('level-grid');
-      grid.innerHTML = '';
-      LEVELS.forEach(level => {
-        const card = document.createElement('div');
-        card.className = 'level-card';
-        card.innerHTML = `<div class="level-icon">${level.icon}</div><div class="level-name">${level.name}</div><div class="level-desc">${level.desc}</div>`;
-        card.style.borderColor = level.color;
-        card.addEventListener('click', () => startLevel(level.id));
-        grid.appendChild(card);
-      });
-      
-      document.querySelectorAll('.difficulty-btn').forEach(btn => {
-        btn.classList.remove('selected');
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          Game.difficulty = btn.dataset.difficulty;
-        });
-      });
-      
-      const normalBtn = document.querySelector('[data-difficulty="normal"]');
-      if (normalBtn && !normalBtn.classList.contains('selected')) {
-        normalBtn.classList.add('selected');
-        Game.difficulty = 'normal';
-      }
-    }
-
-    function startLevel(levelId) {
-      Game.currentLevel = levelId;
-      const level = LEVELS.find(l => l.id === levelId);
-      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
-      els.levelIndicator.innerHTML = `${level.icon} ${level.name} - Wave <span id="wave-num">1</span> <span id="difficulty-badge" style="background:${diff.color}">${diff.label}</span>`;
-      
-      els.levelSelectScreen.classList.add('hidden');
-      els.battleScreen.classList.remove('hidden');
-      els.battleScreen.classList.add('active');
-      
-      AudioSys.init();
-      setTimeout(() => AudioSys.startBGM(), 1000);
-      
-      resizeCanvas();
-      resetGame();
-      setupTowers();
-      startWave();
-      Game.lastTime = performance.now();
-      requestAnimationFrame(gameLoop);
-      
-      setTimeout(() => saveProgress(), 5000);
-    }
-
-    function resizeCanvas() {
-      els.canvas.width = window.innerWidth;
-      els.canvas.height = window.innerHeight;
-      Game.width = window.innerWidth;
-      Game.height = window.innerHeight;
-      generateMap();
-    }
-
-    function generateMap() {
-      if (!Game.width || !Game.height) return;
-      const w = Game.width, h = Game.height;
-      const mapType = Game.wave % 5;
-      
-      switch(mapType) {
-        case 0: Game.pathPoints = [{x:0,y:h*0.5},{x:w*0.2,y:h*0.5},{x:w*0.2,y:h*0.35},{x:w*0.4,y:h*0.35},{x:w*0.4,y:h*0.65},{x:w*0.6,y:h*0.65},{x:w*0.6,y:h*0.4},{x:w*0.8,y:h*0.4},{x:w*0.8,y:h*0.5},{x:w*0.95,y:h*0.5}]; break;
-        case 1: Game.pathPoints = [{x:0,y:h*0.3},{x:w*0.15,y:h*0.3},{x:w*0.15,y:h*0.7},{x:w*0.35,y:h*0.7},{x:w*0.35,y:h*0.3},{x:w*0.55,y:h*0.3},{x:w*0.55,y:h*0.7},{x:w*0.75,y:h*0.7},{x:w*0.75,y:h*0.5},{x:w*0.95,y:h*0.5}]; break;
-        case 2: Game.pathPoints = [{x:0,y:h*0.5},{x:w*0.25,y:h*0.5},{x:w*0.25,y:h*0.2},{x:w*0.5,y:h*0.2},{x:w*0.5,y:h*0.8},{x:w*0.75,y:h*0.8},{x:w*0.75,y:h*0.5},{x:w*0.9,y:h*0.5},{x:w*0.9,y:h*0.35},{x:w*0.95,y:h*0.5}]; break;
-        case 3: Game.pathPoints = [{x:0,y:h*0.5},{x:w*0.12,y:h*0.35},{x:w*0.25,y:h*0.65},{x:w*0.37,y:h*0.35},{x:w*0.5,y:h*0.65},{x:w*0.62,y:h*0.35},{x:w*0.75,y:h*0.65},{x:w*0.87,y:h*0.45},{x:w*0.92,y:h*0.55},{x:w*0.95,y:h*0.5}]; break;
-        case 4: Game.pathPoints = [{x:0,y:h*0.7},{x:w*0.3,y:h*0.7},{x:w*0.3,y:h*0.3},{x:w*0.5,y:h*0.3},{x:w*0.5,y:h*0.7},{x:w*0.7,y:h*0.7},{x:w*0.7,y:h*0.4},{x:w*0.85,y:h*0.4},{x:w*0.85,y:h*0.5},{x:w*0.95,y:h*0.5}]; break;
-      }
-      setupTowers();
-    }
-
-    function setupTowers() {
-      const w = Game.width, h = Game.height;
-      Game.towers = [
-        { x: w * 0.2, y: h * 0.4, range: 200, fireRate: 500, lastFired: 0 },
-        { x: w * 0.5, y: h * 0.4, range: 200, fireRate: 500, lastFired: 0 },
-        { x: w * 0.75, y: h * 0.6, range: 200, fireRate: 500, lastFired: 0 }
-      ];
-    }
-
-    function resetGame() {
-      Game.lives = 3; Game.score = 0; Game.coins = 0; Game.wave = 1;
-      Game.stationHealth = 100; Game.aliens = []; Game.projectiles = []; Game.particles = [];
-      Game.isAnswering = false; Game.questionAnswered = false;
-      Game.towerTargets = [null, null, null];
-      Game.combo = 0; Game.maxCombo = 0; Game.comboTimer = 0; Game.screenShake = 0;
-      Game.bossActive = false;
-      Game.upgrades = { slowAliens: 0, powerHits: 0, bulletSpeed: 0, towerRange: 0 };
-      Game.askedQuestions = [];
-      updateHUD(); updateCombo();
-      els.stationHealthFill.style.width = '100%';
-      els.stationHealthFill.style.background = '#4aff6a';
-    }
-
-    function startWave() {
-      console.log('Starting wave', Game.wave);
-      Game.waveInProgress = true;
-      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
-      Game.aliensRemaining = 5 + Game.wave * 2;
-      Game.spawnTimer = 0;
-      Game.spawnInterval = diff.spawnRate;
-      
-      if (Game.wave % 3 === 1) Game.askedQuestions = [];
-      if (!Game.width || !Game.height) resizeCanvas();
-      generateMap();
-      
-      showWaveNotification();
-      if (document.getElementById('wave-num')) document.getElementById('wave-num').textContent = Game.wave;
-    }
-
-    function showWaveNotification() {
-      els.waveNotification.textContent = 'WAVE ' + Game.wave;
-      els.waveNotification.style.opacity = '1';
-      AudioSys.playWaveStart();
-      let opacity = 1;
-      const fade = setInterval(() => { opacity -= 0.02; els.waveNotification.style.opacity = opacity; if (opacity <= 0) { clearInterval(fade); els.waveNotification.style.opacity = '0'; } }, 20);
-    }
-
-    function spawnAlien() {
-      const colors = ['#4aff6a', '#6aff8a', '#4affaa', '#ffaa4a', '#ff6a6a', '#aa6aff'];
-      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
-      const slowMultiplier = 1 - (Game.upgrades.slowAliens || 0) * 0.2;
-      
-      const isBoss = Game.wave % 5 === 0 && Game.aliensRemaining === 1 && !Game.bossActive;
-      const isMiniBoss = Game.wave % 3 === 0 && Math.random() < 0.3;
-      const isTank = Math.random() < 0.2;
-      
-      let alienType, hp, size, speed, color;
-      
-      if (isBoss) {
-        alienType = 'boss'; hp = 5 + Math.floor(Game.wave / 5); size = 120;
-        speed = 30 * diff.alienSpeed * slowMultiplier; color = '#ff0044';
-        Game.bossActive = true; showBossHealth(hp, 'BOSS WAVE ' + Game.wave);
-      } else if (isMiniBoss) {
-        alienType = 'miniboss'; hp = 3 + Math.floor(Game.wave / 3); size = 80;
-        speed = 40 * diff.alienSpeed * slowMultiplier; color = '#aa00ff';
-      } else if (isTank) {
-        alienType = 'tank'; hp = 2 + Math.floor(Game.wave / 5); size = 60;
-        speed = 35 * diff.alienSpeed * slowMultiplier; color = '#ff8800';
-      } else {
-        alienType = 'normal'; hp = 1; size = 40;
-        speed = (50 + Game.wave * 3) * diff.alienSpeed * slowMultiplier;
-        color = colors[Math.floor(Math.random() * colors.length)];
-      }
-      
-      Game.aliens.push({
-        x: 0, y: Game.pathPoints[0].y, pathIndex: 0,
-        speed: speed, hp: hp, maxHp: hp,
-        color: color, size: size, wobble: Math.random() * Math.PI * 2,
-        id: Math.random(), type: alienType
-      });
-    }
-
-    function gameLoop(currentTime) {
-      if (!els.battleScreen.classList.contains('active')) return;
-      if (Game.inShop) return;
-      
-      const delta = currentTime - Game.lastTime;
-      Game.lastTime = currentTime;
-      
-      update(delta, currentTime);
-      render();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function update(delta, time) {
-      if (!Game.waveInProgress) return;
-      
-      if (Game.combo > 0) {
-        Game.comboTimer -= delta;
-        if (Game.comboTimer <= 0) { Game.combo = 0; updateCombo(); }
-      }
-      
-      if (Game.screenShake > 0) {
-        Game.screenShake *= 0.9;
-        if (Game.screenShake < 0.5) Game.screenShake = 0;
-      }
-      
-      Game.spawnTimer += delta;
-      if (Game.spawnTimer >= Game.spawnInterval && Game.aliensRemaining > 0) {
-        spawnAlien();
-        Game.spawnTimer = 0;
-        Game.aliensRemaining--;
-      }
-      
-      Game.towers.forEach((tower, towerIndex) => {
-        if (time >= tower.lastFired + tower.fireRate && !Game.isAnswering) {
-          const target = findClosestAlien(tower, towerIndex);
-          if (target) {
-            Game.towerTargets[towerIndex] = target;
-            fireTower(tower, target, towerIndex);
-            tower.lastFired = time;
-          }
-        }
-      });
-      
-      Game.aliens.forEach((alien, index) => {
-        moveAlien(alien, delta);
-        alien.wobble += 0.1;
-        if (alien.pathIndex >= Game.pathPoints.length - 1) {
-          Game.aliens.splice(index, 1);
-          damageStation(10);
-        }
-      });
-      
-      Game.projectiles.forEach((proj, index) => {
-        proj.x += proj.vx * delta / 1000;
-        proj.y += proj.vy * delta / 1000;
-        proj.life -= delta;
-        
-        if (proj.targetAlien && Game.aliens.includes(proj.targetAlien)) {
-          const dist = Math.hypot(proj.x - proj.targetAlien.x, proj.y - proj.targetAlien.y);
-          if (dist < 30) {
-            proj.targetAlien.hp--;
-            AudioSys.playHit();
-            createParticles(proj.targetAlien.x, proj.targetAlien.y, proj.targetAlien.color, 5);
-            if (proj.targetAlien.hp <= 0) {
-              const ai = Game.aliens.indexOf(proj.targetAlien);
-              if (ai > -1) destroyAlien(proj.targetAlien);
-            }
-            Game.projectiles.splice(index, 1);
-            return;
-          }
-        }
-        
-        if (proj.life <= 0 || proj.x > Game.width || proj.y > Game.height || proj.x < 0 || proj.y < 0) {
-          Game.projectiles.splice(index, 1);
-        }
-      });
-      
-      updateParticles(delta);
-      
-      if (Game.aliens.length === 0 && Game.aliensRemaining === 0) completeWave();
-    }
-
-    function findClosestAlien(tower, towerIndex) {
-      let closest = null, minDist = tower.range;
-      Game.aliens.forEach(alien => {
-        const dist = Math.hypot(tower.x - alien.x, tower.y - alien.y);
-        if (dist < minDist && alien !== Game.towerTargets[(towerIndex + 1) % 3] && alien !== Game.towerTargets[(towerIndex + 2) % 3]) {
-          minDist = dist; closest = alien;
-        }
-      });
-      if (!closest) {
-        Game.aliens.forEach(alien => {
-          const dist = Math.hypot(tower.x - alien.x, tower.y - alien.y);
-          if (dist < minDist) { minDist = dist; closest = alien; }
-        });
-      }
-      return closest;
-    }
-
-    function fireTower(tower, target, towerIndex) {
-      const questions = QUESTION_BANKS[Game.currentLevel] || QUESTION_BANKS.reception;
-      const availableQuestions = questions.filter(q => !Game.askedQuestions.includes(q.id));
-      if (availableQuestions.length < 5) Game.askedQuestions = [];
-      const questionPool = availableQuestions.length > 0 ? availableQuestions : questions;
-      Game.currentQuestion = questionPool[Math.floor(Math.random() * questionPool.length)];
-      Game.askedQuestions.push(Game.currentQuestion.id);
-      if (Game.askedQuestions.length > 15) Game.askedQuestions.shift();
-      
-      Game.isAnswering = true;
-      Game.questionAnswered = false;
-      Game.firingTowerIndex = towerIndex;
-      showQuestionPanel();
-    }
-
-    function showQuestionPanel() {
-      const q = Game.currentQuestion;
-      els.questionLetter.textContent = q.letter;
-      els.questionText.textContent = q.question;
-      els.questionPanel.classList.remove('hidden');
-      els.timerFill.style.width = '100%';
-      els.hintBtn.classList.remove('available');
-      
-      els.answersGrid.innerHTML = '';
-      q.answers.forEach((answer, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'answer-btn';
-        btn.textContent = answer;
-        btn.addEventListener('click', () => handleAnswer(index, btn));
-        els.answersGrid.appendChild(btn);
-      });
-      
-      const diff = DIFFICULTY_SETTINGS[Game.difficulty];
-      let timeLeft = 100;
-      Game.questionTimer = setInterval(() => {
-        timeLeft -= diff.timerSpeed;
-        els.timerFill.style.width = timeLeft + '%';
-        if (timeLeft <= 0) { clearInterval(Game.questionTimer); handleAnswer(-1, null); }
-      }, 150);
-    }
-
-    function handleAnswer(index, btn) {
-      if (Game.questionAnswered) return;
-      Game.questionAnswered = true;
-      clearInterval(Game.questionTimer);
-      
-      const q = Game.currentQuestion;
-      const buttons = els.answersGrid.querySelectorAll('.answer-btn');
-      buttons.forEach(b => b.disabled = true);
-      
-      if (index >= 0) TTS.speak(q.answers[index]);
-      
-      if (index === q.correct) {
-        if (btn) btn.classList.add('correct');
-        fireProjectileAtTarget();
-      } else {
-        if (btn) btn.classList.add('wrong');
-        buttons[q.correct].classList.add('correct');
-        els.hintBtn.classList.add('available');
-      }
-      
-      setTimeout(() => {
-        els.questionPanel.classList.add('hidden');
-        Game.isAnswering = false;
-        Game.towerTargets[Game.firingTowerIndex] = null;
-      }, 800);
-    }
-
-    function fireProjectileAtTarget() {
-      AudioSys.playFire();
-      const towerIndex = Game.firingTowerIndex;
-      const target = Game.towerTargets[towerIndex];
-      const tower = Game.towers[towerIndex];
-      
-      if (target && Game.aliens.includes(target)) {
-        const angle = Math.atan2(target.y - tower.y, target.x - tower.x);
-        Game.projectiles.push({
-          x: tower.x, y: tower.y,
-          vx: Math.cos(angle) * 500,
-          vy: Math.sin(angle) * 500,
-          life: 2000,
-          targetAlien: target
-        });
-      }
-    }
-
-    function moveAlien(alien, delta) {
-      const target = Game.pathPoints[alien.pathIndex + 1];
-      if (!target) return;
-      const speedMultiplier = Game.speedBoost ? 2 : 1;
-      const speed = alien.speed * speedMultiplier;
-      const angle = Math.atan2(target.y - alien.y, target.x - alien.x);
-      alien.x += Math.cos(angle) * speed * delta / 1000;
-      alien.y += Math.sin(angle) * speed * delta / 1000;
-      alien.y += Math.sin(alien.wobble) * 0.3;
-      if (Math.hypot(target.x - alien.x, target.y - alien.y) < 10) alien.pathIndex++;
-    }
-
-    function damageStation(amount) {
-      Game.stationHealth -= amount;
-      const pct = Game.stationHealth / 100;
-      els.stationHealthFill.style.width = pct * 100 + '%';
-      if (pct < 0.3) els.stationHealthFill.style.background = '#ff4a4a';
-      else if (pct < 0.6) els.stationHealthFill.style.background = '#ffaa4a';
-      Game.lives--;
-      Game.combo = 0;
-      updateCombo();
-      AudioSys.playWrong();
-      createParticles(Game.width * 0.93, Game.height * 0.5, '#ff4a4a', 10);
-      Game.screenShake = 10;
-      updateHUD();
-      if (Game.stationHealth <= 0) gameOver();
-    }
-
-    function destroyAlien(alien) {
-      Game.combo++;
-      if (Game.combo > Game.maxCombo) Game.maxCombo = Game.combo;
-      Game.comboTimer = 2000;
-      
-      const ai = Game.aliens.indexOf(alien);
-      if (ai > -1) Game.aliens.splice(ai, 1);
-      
-      let basePoints = 10, coinReward = 1;
-      if (alien.type === 'boss') { basePoints = 100; coinReward = 10; Game.bossActive = false; hideBossHealth(); showAchievement('👑 BOSS DEFEATED! 👑'); AudioSys.playWaveStart(); Game.screenShake = 30; }
-      else if (alien.type === 'miniboss') { basePoints = 50; coinReward = 5; showAchievement('💪 MINI BOSS DOWN!'); }
-      else if (alien.type === 'tank') { basePoints = 25; coinReward = 2; }
-      
-      const comboMultiplier = Math.min(Game.combo, 10);
-      Game.score += basePoints * comboMultiplier;
-      Game.coins += coinReward;
-      
-      AudioSys.playExplosion();
-      createParticles(alien.x, alien.y, alien.color, alien.type === 'boss' ? 50 : 15);
-      
-      const popupText = comboMultiplier > 1 ? '+' + (basePoints * comboMultiplier) + ' 🔥' : '+' + basePoints;
-      createScorePopup(alien.x, alien.y, popupText, comboMultiplier > 3 ? '#ffaa00' : '#4aff6a');
-      
-      if (Game.combo >= 3) {
-        showComboText(Game.combo);
-        if (Game.combo % 5 === 0) { showAchievement('🔥 ' + Game.combo + ' COMBO! 🔥'); Game.screenShake = 15; }
-      }
-      
-      updateCombo();
-      updateHUD();
-    }
-
-    function completeWave() {
-      console.log('Wave complete!');
-      Game.waveInProgress = false;
-      Game.wave++;
-      const bonus = Game.lives * 5;
-      Game.coins += bonus;
-      showAchievement('🎉 WAVE COMPLETE! +' + bonus + ' 🪙');
-      updateHUD();
-      saveProgress();
-      setTimeout(() => openShop(), 2000);
-    }
-
-    function openShop() {
-      Game.inShop = true;
-      AudioSys.stopBGM();
-      
-      els.battleScreen.classList.add('hidden');
-      els.shopScreen.classList.remove('hidden');
-      els.shopScreen.classList.add('active');
-      
-      document.getElementById('shop-coin-display').textContent = Game.coins;
-      
-      const grid = document.getElementById('shop-grid');
-      grid.innerHTML = '';
-      
-      const picks = [];
-      const available = [...UPGRADES_POOL];
-      for (let i = 0; i < 3 && available.length > 0; i++) {
-        const idx = Math.floor(Math.random() * available.length);
-        picks.push(available[idx]);
-        available.splice(idx, 1);
-      }
-      
-      picks.forEach(upgrade => {
-        const currentLevel = Game.upgrades[upgrade.id] || 0;
-        const isMaxed = currentLevel >= upgrade.maxLevel;
-        const canAfford = Game.coins >= upgrade.cost;
-        
-        const card = document.createElement('div');
-        card.className = 'level-card' + (isMaxed ? ' locked' : '');
-        card.style.borderColor = canAfford && !isMaxed ? '#4aff6a' : '#666';
-        card.innerHTML = `<div class="level-icon">${upgrade.icon}</div><div class="level-name">${upgrade.name} ${isMaxed ? '✅' : 'Lv.' + currentLevel}</div><div class="level-desc">${upgrade.desc}</div><div style="color:${canAfford && !isMaxed ? '#ffaa4a' : '#666'}; font-weight:800; margin-top:10px;">${isMaxed ? 'MAXED!' : '🪙 ' + upgrade.cost}</div>`;
-        
-        if (!isMaxed) card.addEventListener('click', () => buyUpgrade(upgrade, card));
-        grid.appendChild(card);
-      });
-      
-      Game.shopPicksRemaining = 3;
-      document.getElementById('shop-picks-remaining').textContent = 3;
-      
-      const startBtn = document.getElementById('start-wave-btn');
-      startBtn.style.display = 'inline-block';
-      startBtn.textContent = '▶ SKIP & START WAVE (3 left)';
-    }
-
-    function buyUpgrade(upgrade, cardElement) {
-      if (Game.shopPicksRemaining <= 0) return;
-      
-      const currentLevel = Game.upgrades[upgrade.id] || 0;
-      if (currentLevel >= upgrade.maxLevel || Game.coins < upgrade.cost) return;
-      
-      Game.coins -= upgrade.cost;
-      Game.upgrades[upgrade.id] = currentLevel + 1;
-      Game.shopPicksRemaining--;
-      
-      document.getElementById('shop-coin-display').textContent = Game.coins;
-      document.getElementById('shop-picks-remaining').textContent = Game.shopPicksRemaining;
-      
-      showAchievement('🛠️ ' + upgrade.name + ' UPGRADED!');
-      AudioSys.playCorrect();
-      
-      cardElement.style.borderColor = '#666';
-      cardElement.style.opacity = '0.5';
-      cardElement.style.pointerEvents = 'none';
-      
-      const startBtn = document.getElementById('start-wave-btn');
-      startBtn.textContent = Game.shopPicksRemaining > 0 ? `▶ SKIP & START WAVE (${Game.shopPicksRemaining} left)` : '▶ START WAVE';
-      if (Game.shopPicksRemaining <= 0) startBtn.style.background = 'linear-gradient(180deg, #4aff6a 0%, #2abf4a 100%)';
-    }
-
-    function closeShop() {
-      Game.inShop = false;
-      els.shopScreen.classList.add('hidden');
-      els.shopScreen.classList.remove('active');
-      els.battleScreen.classList.remove('hidden');
-      els.battleScreen.classList.add('active');
-      AudioSys.startBGM();
-      
-      console.log('Starting wave', Game.wave);
-      resizeCanvas();
-      if (!Game.towers || Game.towers.length === 0) setupTowers();
-      startWave();
-      Game.lastTime = performance.now();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function gameOver() {
-      Game.waveInProgress = false;
-      AudioSys.stopBGM();
-      AudioSys.playGameOver();
-      
-      saveProgress();
-      
-      document.getElementById('final-wave').textContent = Game.wave;
-      document.getElementById('final-score').textContent = Game.score;
-      document.getElementById('final-coins').textContent = Game.coins;
-      document.getElementById('final-username').textContent = Game.playerUsername || 'Player';
-      document.getElementById('saved-slot-num').textContent = Game.currentSaveSlot + 1;
-      
-      setTimeout(() => switchScreen('gameover'), 500);
-    }
-
-    function restartGame() {
-      if (Game.currentSaveSlot >= 0) loadGame(Game.currentSaveSlot);
-      else startLevel(Game.currentLevel);
-    }
-
-    function toggleSound() {
-      const enabled = AudioSys.toggle();
-      document.getElementById('sound-btn').textContent = enabled ? '🔊' : '🔇';
-    }
-
-    function togglePause() {
-      alert('🎮 Game ' + (Game.inShop ? 'in Shop' : 'Running') + '\n\nAnswer questions to fire towers!');
-    }
-
-    function updateHUD() {
-      els.livesDisplay.textContent = Game.lives;
-      els.scoreDisplay.textContent = Game.score;
-      els.coinsDisplay.textContent = Game.coins;
-    }
-
-    function updateCombo() {
-      const comboDisplay = document.getElementById('combo-display');
-      const comboCount = document.getElementById('combo-count');
-      if (Game.combo >= 2) {
-        comboDisplay.style.display = 'inline-block';
-        comboCount.textContent = Game.combo;
-      } else {
-        comboDisplay.style.display = 'none';
-      }
-    }
-
-    function render() {
-      const ctx = els.ctx;
-      const w = Game.width || window.innerWidth;
-      const h = Game.height || window.innerHeight;
-      
-      if (Game.screenShake > 0) {
-        ctx.translate((Math.random() - 0.5) * Game.screenShake, (Math.random() - 0.5) * Game.screenShake);
-      }
-      
-      ctx.fillStyle = '#0a0a1a';
-      ctx.fillRect(0, 0, w, h);
-      
-      if (Game.pathPoints && Game.pathPoints.length > 0) {
-        ctx.strokeStyle = 'rgba(74, 74, 106, 0.5)';
-        ctx.lineWidth = 40;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        ctx.moveTo(Game.pathPoints[0].x, Game.pathPoints[0].y);
-        Game.pathPoints.forEach(p => ctx.lineTo(p.x, p.y));
-        ctx.stroke();
-        
-        ctx.strokeStyle = 'rgba(74, 74, 106, 0.8)';
-        ctx.lineWidth = 30;
-        ctx.stroke();
-      }
-      
-      drawStation(w * 0.93, h * 0.5);
-      if (Game.towers && Game.towers.length > 0) Game.towers.forEach(tower => drawTower(tower.x, tower.y));
-      Game.aliens.forEach(alien => drawAlien(alien));
-      Game.projectiles.forEach(proj => drawProjectile(proj));
-      drawParticles();
-    }
-
-    function drawStation(x, y) {
-      const ctx = els.ctx;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.fillStyle = '#4a9eff';
-      ctx.beginPath();
-      ctx.arc(0, 0, 50, Math.PI, 0);
-      ctx.fill();
-      ctx.fillStyle = '#2a5fbf';
-      ctx.fillRect(-40, 0, 80, 30);
-      ctx.fillStyle = '#4aff6a';
-      ctx.beginPath();
-      ctx.arc(-20, -20, 8, 0, Math.PI * 2);
-      ctx.arc(0, -25, 8, 0, Math.PI * 2);
-      ctx.arc(20, -20, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function drawTower(x, y) {
-      const ctx = els.ctx;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.fillStyle = '#4a9eff';
-      ctx.fillRect(-20, -20, 40, 40);
-      ctx.fillStyle = '#6ab8ff';
-      ctx.beginPath();
-      ctx.arc(0, 0, 15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#2a5fbf';
-      ctx.fillRect(-5, -25, 10, 20);
-      ctx.restore();
-    }
-
-    function drawAlien(alien) {
-      const ctx = els.ctx;
-      ctx.save();
-      ctx.translate(alien.x, alien.y);
-      ctx.fillStyle = alien.color;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, alien.size/2, alien.size/3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(-alien.size/5, -alien.size/10, alien.size/6, 0, Math.PI * 2);
-      ctx.arc(alien.size/5, -alien.size/10, alien.size/6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#2a2a4a';
-      ctx.beginPath();
-      ctx.arc(-alien.size/5, -alien.size/10, alien.size/12, 0, Math.PI * 2);
-      ctx.arc(alien.size/5, -alien.size/10, alien.size/12, 0, Math.PI * 2);
-      ctx.fill();
-      if (alien.maxHp > 1) {
-        const hpBarWidth = alien.size * 0.8;
-        const hpPercent = alien.hp / alien.maxHp;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(-hpBarWidth/2, -alien.size/2 - 15, hpBarWidth, 8);
-        ctx.fillStyle = hpPercent > 0.5 ? '#4aff6a' : hpPercent > 0.25 ? '#ffaa4a' : '#ff4a4a';
-        ctx.fillRect(-hpBarWidth/2, -alien.size/2 - 15, hpBarWidth * hpPercent, 8);
-      }
-      if (alien.type === 'boss') {
-        ctx.fillStyle = '#ffaa00';
-        ctx.beginPath();
-        ctx.moveTo(-30, -50); ctx.lineTo(-20, -70); ctx.lineTo(-10, -50);
-        ctx.lineTo(0, -75); ctx.lineTo(10, -50); ctx.lineTo(20, -70); ctx.lineTo(30, -50);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    function drawProjectile(proj) {
-      const ctx = els.ctx;
-      ctx.save();
-      ctx.translate(proj.x, proj.y);
-      ctx.fillStyle = '#ffaa4a';
-      ctx.beginPath();
-      ctx.arc(0, 0, 10, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffcc4a';
-      ctx.beginPath();
-      ctx.arc(0, 0, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function createParticles(x, y, color, count) {
-      for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
-        const speed = 100 + Math.random() * 150;
-        Game.particles.push({
-          x, y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          life: 600 + Math.random() * 200,
-          maxLife: 800,
-          size: 3 + Math.random() * 4,
-          color, alpha: 1
-        });
-      }
-    }
-
-    function updateParticles(delta) {
-      Game.particles.forEach((p, i) => {
-        p.x += p.vx * delta / 1000;
-        p.y += p.vy * delta / 1000;
-        p.vy += 200 * delta / 1000;
-        p.life -= delta;
-        p.alpha = p.life / p.maxLife;
-        if (p.life <= 0) Game.particles.splice(i, 1);
-      });
-    }
-
-    function drawParticles() {
-      const ctx = els.ctx;
-      Game.particles.forEach(p => {
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * p.alpha, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-    }
-
-    function createScorePopup(x, y, text, color) {
-      const popup = document.createElement('div');
-      popup.className = 'popup';
-      popup.style.left = x + 'px';
-      popup.style.top = y + 'px';
-      popup.style.color = color;
-      popup.textContent = text;
-      document.getElementById('battle-screen').appendChild(popup);
-      setTimeout(() => popup.remove(), 1000);
-    }
-
-    function showComboText(combo) {
-      const comboEl = document.createElement('div');
-      comboEl.className = 'combo-text';
-      comboEl.textContent = combo + ' COMBO!';
-      document.getElementById('battle-screen').appendChild(comboEl);
-      setTimeout(() => comboEl.remove(), 500);
-    }
-
-    function showAchievement(text) {
-      const achEl = document.createElement('div');
-      achEl.className = 'achievement';
-      achEl.textContent = text;
-      document.getElementById('battle-screen').appendChild(achEl);
-      setTimeout(() => achEl.remove(), 2000);
-    }
-
-    function showBossHealth(hp, name) {
-      const container = document.getElementById('boss-health-container');
-      const fill = document.getElementById('boss-health-fill');
-      const nameEl = document.getElementById('boss-name');
-      container.style.display = 'block';
-      nameEl.textContent = name;
-      Game.currentBossMaxHp = hp;
-      updateBossHealth(hp);
-    }
-
-    function updateBossHealth(currentHp) {
-      const fill = document.getElementById('boss-health-fill');
-      fill.style.width = (currentHp / Game.currentBossMaxHp * 100) + '%';
-    }
-
-    function hideBossHealth() {
-      document.getElementById('boss-health-container').style.display = 'none';
-    }
-
-    function saveProgress() {
-      if (Game.currentSaveSlot < 0 || !Game.playerUsername) return;
-      const saveData = {
-        username: Game.playerUsername,
-        level: Game.currentLevel,
-        difficulty: Game.difficulty,
-        wave: Game.wave,
-        score: Game.score,
-        coins: Game.coins,
-        lives: Game.lives,
-        stationHealth: Game.stationHealth,
-        upgrades: Game.upgrades,
-        maxCombo: Game.maxCombo
-      };
-      SAVE_SYSTEM.save(Game.currentSaveSlot, saveData);
-      console.log('Saved to slot', Game.currentSaveSlot);
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    // Expose functions globally
-    window.showSaveSlots = showSaveSlots;
-    window.showLevelSelect = showLevelSelect;
-    window.switchScreen = switchScreen;
-    window.restartGame = restartGame;
-    window.startLevel = startLevel;
-    window.confirmUsername = confirmUsername;
-    window.closeShop = closeShop;
-    window.openShop = openShop;
-
-    // Start the game
-    init();
-  </script>
+  <!-- Modular JavaScript -->
+  <script src="js/questions/reception.js"></script>
+  <script src="js/questions/year1.js"></script>
+  <script src="js/questions/year2.js"></script>
+  <script src="js/questions/year3.js"></script>
+  <script src="js/questions/year4.js"></script>
+  <script src="js/questions/year5.js"></script>
+  <script src="js/questions/year6.js"></script>
+  <script src="js/questions/index.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/save-system.js"></script>
+  <script src="js/game-state.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game-loop.js"></script>
+  <script src="js/towers.js"></script>
+  <script src="js/aliens.js"></script>
+  <script src="js/projectiles.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/questions-panel.js"></script>
+  <script src="js/shop.js"></script>
+  <!-- <script src="js/ui.js"></script> -->
+  <script src="js/main.js"></script>
 </body>
 </html>

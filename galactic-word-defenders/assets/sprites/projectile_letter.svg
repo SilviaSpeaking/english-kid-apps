@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
-  <circle cx="25" cy="25" r="20" fill="#ffaa4a"/>
-  <circle cx="25" cy="25" r="15" fill="#ffcc4a"/>
-  <text x="25" y="32" text-anchor="middle" fill="#2a2a4a" font-size="20" font-weight="bold" font-family="Nunito">A</text>
-</svg>

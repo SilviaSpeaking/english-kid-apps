@@ -1,10 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
-  <circle cx="75" cy="75" r="60" fill="#4a4a6a" stroke="#6a6a8a" stroke-width="4"/>
-  <circle cx="75" cy="75" r="40" fill="#2a2a4a"/>
-  <circle cx="55" cy="65" r="8" fill="#4aff6a"/>
-  <circle cx="95" cy="65" r="8" fill="#4aff6a"/>
-  <ellipse cx="75" cy="90" rx="20" ry="10" fill="#4aff6a"/>
-  <circle cx="75" cy="40" r="15" fill="#4a9eff" opacity="0.6"/>
-  <rect x="30" cy="20" width="10" height="30" fill="#8a8aaa" rx="5"/>
-  <rect x="110" cy="20" width="10" height="30" fill="#8a8aaa" rx="5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="crispEdges">
+  <!-- Main station body -->
+  <rect x="12" y="12" width="40" height="40" fill="#c0c0d0" stroke="#808090" stroke-width="2"/>
+  <rect x="16" y="16" width="32" height="32" fill="#d0d0e0"/>
+  
+  <!-- Central dome -->
+  <rect x="24" y="20" width="16" height="8" fill="#4a9eff"/>
+  <rect x="26" y="22" width="4" height="4" fill="#7ab8ff"/>
+  <rect x="34" y="22" width="4" height="4" fill="#7ab8ff"/>
+  
+  <!-- Windows -->
+  <rect x="20" y="32" width="4" height="4" fill="#4aff6a"/>
+  <rect x="30" y="32" width="4" height="4" fill="#4aff6a"/>
+  <rect x="40" y="32" width="4" height="4" fill="#4aff6a"/>
+  
+  <!-- Side panels -->
+  <rect x="12" y="24" width="4" height="16" fill="#606080"/>
+  <rect x="48" y="24" width="4" height="16" fill="#606080"/>
+  
+  <!-- Antenna -->
+  <rect x="30" y="8" width="4" height="4" fill="#808090"/>
+  <rect x="28" y="4" width="8" height="4" fill="#ff6a6a"/>
+  
+  <!-- Details -->
+  <rect x="18" y="48" width="4" height="4" fill="#ffa500"/>
+  <rect x="42" y="48" width="4" height="4" fill="#ffa500"/>
 </svg>

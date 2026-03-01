@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Shield -->
+  <rect x="4" y="8" width="24" height="20" fill="none" stroke="#4a9eff" stroke-width="2" opacity="0.6"/>
+  <rect x="6" y="10" width="20" height="16" fill="#4a9eff" opacity="0.2"/>
+  
+  <!-- Body -->
+  <rect x="10" y="12" width="12" height="14" fill="#ffa500"/>
+  <rect x="12" y="14" width="8" height="10" fill="#ffb500"/>
+  
+  <!-- Eyes -->
+  <rect x="11" y="16" width="4" height="4" fill="#ffffff"/>
+  <rect x="17" y="16" width="4" height="4" fill="#ffffff"/>
+  <rect x="12" y="17" width="2" height="2" fill="#202030"/>
+  <rect x="18" y="17" width="2" height="2" fill="#202030"/>
+  
+  <!-- Helmet -->
+  <rect x="10" y="10" width="12" height="4" fill="#c0c0d0"/>
+  <rect x="12" y="11" width="8" height="2" fill="#d0d0e0"/>
+  
+  <!-- Shield generator -->
+  <rect x="14" y="26" width="4" height="4" fill="#4a9eff"/>
+  <rect x="15" y="27" width="2" height="2" fill="#7ab8ff"/>
+</svg>

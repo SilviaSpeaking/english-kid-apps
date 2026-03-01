@@ -1,0 +1,467 @@
+/**
+ * UI Manager
+ * Handles all UI elements and updates
+ */
+
+let uiElements = null;
+
+/**
+ * Get cached UI elements
+ * @returns {object} UI elements object
+ */
+function getUIElements() {
+  if (!uiElements) {
+    uiElements = {
+      titleScreen: document.getElementById('title-screen'),
+      saveSelectScreen: document.getElementById('save-select-screen'),
+      usernameScreen: document.getElementById('username-screen'),
+      levelSelectScreen: document.getElementById('level-select-screen'),
+      battleScreen: document.getElementById('battle-screen'),
+      shopScreen: document.getElementById('shop-screen'),
+      gameoverScreen: document.getElementById('gameover-screen'),
+      questionPanel: document.getElementById('question-panel'),
+      questionLetter: document.getElementById('question-letter'),
+      questionText: document.getElementById('question-text'),
+      answersGrid: document.getElementById('answers-grid'),
+      timerFill: document.getElementById('timer-fill'),
+      hintBtn: document.getElementById('hint-btn'),
+      livesDisplay: document.getElementById('lives-display'),
+      scoreDisplay: document.getElementById('score-display'),
+      coinsDisplay: document.getElementById('coins-display'),
+      stationHealthFill: document.getElementById('station-health-fill'),
+      waveNotification: document.getElementById('wave-notification'),
+      waveNum: document.getElementById('wave-num'),
+      canvas: document.getElementById('battle-canvas')
+    };
+  }
+  return uiElements;
+}
+
+/**
+ * Switch to a different screen
+ * @param {string} name - Screen name
+ */
+function switchScreen(name) {
+  const screens = ['title', 'saveSelect', 'username', 'levelSelect', 'battle', 'shop', 'gameover'];
+  
+  screens.forEach(screenName => {
+    const el = document.getElementById(screenName + '-screen');
+    if (el) {
+      el.classList.add('hidden');
+      el.classList.remove('active');
+    }
+  });
+  
+  const target = document.getElementById(name + '-screen');
+  if (target) {
+    target.classList.remove('hidden');
+    target.classList.add('active');
+  }
+}
+
+/**
+ * Update HUD display
+ */
+function updateHUD() {
+  const els = getUIElements();
+  els.livesDisplay.textContent = gameState.lives;
+  els.scoreDisplay.textContent = gameState.score;
+  els.coinsDisplay.textContent = gameState.coins;
+}
+
+/**
+ * Update combo display
+ */
+function updateComboUI() {
+  const comboDisplay = document.getElementById('combo-display');
+  const comboCount = document.getElementById('combo-count');
+  
+  if (gameState.combo >= 2) {
+    comboDisplay.style.display = 'inline-block';
+    comboCount.textContent = gameState.combo;
+  } else {
+    comboDisplay.style.display = 'none';
+  }
+}
+
+/**
+ * Show wave notification
+ */
+function showWaveNotification() {
+  const els = getUIElements();
+  els.waveNotification.textContent = 'WAVE ' + gameState.wave;
+  els.waveNotification.style.opacity = '1';
+  
+  audioSys.playWaveStart();
+  
+  let opacity = 1;
+  const fade = setInterval(() => {
+    opacity -= 0.02;
+    els.waveNotification.style.opacity = opacity;
+    if (opacity <= 0) {
+      clearInterval(fade);
+      els.waveNotification.style.opacity = '0';
+    }
+  }, 20);
+}
+
+/**
+ * Show boss health bar
+ * @param {number} hp - Boss HP
+ * @param {string} name - Boss name
+ */
+function showBossHealth(hp, name) {
+  const container = document.getElementById('boss-health-container');
+  const fill = document.getElementById('boss-health-fill');
+  const nameEl = document.getElementById('boss-name');
+  
+  container.style.display = 'block';
+  nameEl.textContent = name;
+  gameState.currentBossMaxHp = hp;
+  updateBossHealth(hp);
+}
+
+/**
+ * Update boss health display
+ * @param {number} currentHp - Current HP
+ */
+function updateBossHealth(currentHp) {
+  const fill = document.getElementById('boss-health-fill');
+  const pct = currentHp / gameState.currentBossMaxHp;
+  fill.style.width = (pct * 100) + '%';
+}
+
+/**
+ * Hide boss health bar
+ */
+function hideBossHealth() {
+  document.getElementById('boss-health-container').style.display = 'none';
+}
+
+/**
+ * Show combo text
+ * @param {number} combo - Combo count
+ */
+function showComboText(combo) {
+  const comboEl = document.createElement('div');
+  comboEl.className = 'combo-text';
+  comboEl.textContent = combo + ' COMBO!';
+  document.getElementById('battle-screen').appendChild(comboEl);
+  setTimeout(() => comboEl.remove(), 500);
+}
+
+/**
+ * Show achievement notification
+ * @param {string} text - Achievement text
+ */
+function showAchievement(text) {
+  const achEl = document.createElement('div');
+  achEl.className = 'achievement';
+  achEl.textContent = text;
+  document.getElementById('battle-screen').appendChild(achEl);
+  setTimeout(() => achEl.remove(), 2000);
+}
+
+/**
+ * Create score popup
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {string} text - Text to show
+ * @param {string} color - Text color
+ */
+function createScorePopup(x, y, text, color) {
+  const popup = document.createElement('div');
+  popup.className = 'popup';
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+  popup.style.color = color;
+  popup.textContent = text;
+  document.getElementById('battle-screen').appendChild(popup);
+  setTimeout(() => popup.remove(), 1000);
+}
+
+/**
+ * Toggle sound on/off
+ */
+function toggleSound() {
+  const enabled = audioSys.toggle();
+  document.getElementById('sound-btn').textContent = enabled ? '🔊' : '🔇';
+}
+
+/**
+ * Show pause message
+ */
+function togglePause() {
+  alert('🎮 Game ' + (gameState.inShop ? 'in Shop' : 'Running') + '\n\nAnswer questions to fire towers!');
+}
+
+/**
+ * Start a new level
+ * @param {string} levelId - Level ID
+ */
+function startLevel(levelId) {
+  gameState.currentLevel = levelId;
+  const level = LEVELS.find(l => l.id === levelId);
+  const diff = DIFFICULTY_SETTINGS[gameState.difficulty];
+  
+  document.getElementById('level-indicator').innerHTML = `
+    ${level.icon} ${level.name} - Wave <span id="wave-num">1</span> 
+    <span id="difficulty-badge" style="background:${diff.color}">${diff.label}</span>
+  `;
+  
+  switchScreen('battle');
+  
+  audioSys.init();
+  setTimeout(() => audioSys.startBGM(), 1000);
+  
+  if (renderer) renderer.resize();
+  gameState.reset();
+  setupTowers();
+  startWave();
+  gameState.lastTime = performance.now();
+  
+  if (gameLoop) gameLoop.start();
+  
+  // Auto-save after 5 seconds
+  setTimeout(() => saveGame(), 5000);
+}
+
+/**
+ * Start a wave
+ */
+function startWave() {
+  gameState.startWave();
+  
+  if (renderer) renderer.resize();
+  setupTowers();
+  
+  showWaveNotification();
+  document.getElementById('wave-num').textContent = gameState.wave;
+}
+
+/**
+ * Complete current wave
+ */
+function completeWave() {
+  gameState.completeWave();
+  showAchievement('🎉 WAVE COMPLETE! +' + (gameState.lives * 5) + ' 🪙');
+  updateHUD();
+  saveGame();
+  setTimeout(() => openShop(), 2000);
+}
+
+/**
+ * Damage station
+ * @param {number} amount - Damage amount
+ */
+function damageStation(amount) {
+  gameState.damageStation(amount);
+  
+  const pct = gameState.stationHealth / 100;
+  const fill = document.getElementById('station-health-fill');
+  fill.style.width = (pct * 100) + '%';
+  
+  if (pct < 0.3) fill.style.background = '#ff4a4a';
+  else if (pct < 0.6) fill.style.background = '#ffa500';
+  
+  updateComboUI();
+  audioSys.playWrong();
+  createParticles(gameState.width * 0.93, gameState.height * 0.5, '#ff4a4a', 10);
+  updateHUD();
+  
+  if (gameState.isGameOver()) {
+    gameOver();
+  }
+}
+
+/**
+ * Game over
+ */
+function gameOver() {
+  gameState.waveInProgress = false;
+  audioSys.stopBGM();
+  audioSys.playGameOver();
+  
+  document.getElementById('final-username').textContent = gameState.playerUsername || 'Player';
+  document.getElementById('final-wave').textContent = gameState.wave;
+  document.getElementById('final-score').textContent = gameState.score;
+  document.getElementById('final-coins').textContent = gameState.coins;
+  document.getElementById('saved-slot-num').textContent = gameState.currentSaveSlot + 1;
+  
+  saveGame();
+  setTimeout(() => switchScreen('gameover'), 500);
+}
+
+/**
+ * Restart game
+ */
+function restartGame() {
+  startLevel(gameState.currentLevel);
+}
+
+/**
+ * Save game
+ */
+function saveGame() {
+  if (gameState.currentSaveSlot < 0) return;
+  saveSystem.save(gameState.currentSaveSlot, gameState.getSaveData());
+}
+
+/**
+ * Show save slots
+ */
+function showSaveSlots() {
+  const container = document.getElementById('save-slots');
+  container.innerHTML = '';
+  
+  const saves = saveSystem.getAll();
+  
+  saves.forEach((save, index) => {
+    const slotEl = document.createElement('div');
+    slotEl.className = 'save-slot' + (save ? '' : ' empty');
+    
+    if (save) {
+      slotEl.innerHTML = `
+        <div class="save-slot-icon">👤</div>
+        <div class="save-slot-info">
+          <div class="save-slot-name">${escapeHtml(save.username)}</div>
+          <div class="save-slot-details">${save.level} | Wave ${save.wave} | Score: ${save.score}</div>
+          <div class="save-slot-details">🪙 ${save.coins} coins</div>
+        </div>
+        <button class="save-slot-delete" data-slot="${index}">🗑</button>
+      `;
+      slotEl.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('save-slot-delete')) {
+          loadGame(index);
+        }
+      });
+    } else {
+      slotEl.innerHTML = `
+        <div class="save-slot-icon">➕</div>
+        <div class="save-slot-info">
+          <div class="save-slot-name">Empty Slot ${index + 1}</div>
+          <div class="save-slot-details">Click to create new game</div>
+        </div>
+      `;
+      slotEl.addEventListener('click', () => selectSaveSlot(index));
+    }
+    
+    container.appendChild(slotEl);
+  });
+  
+  // Delete button handlers
+  document.querySelectorAll('.save-slot-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const slot = parseInt(btn.dataset.slot);
+      if (confirm(`Delete save slot ${slot + 1}?`)) {
+        saveSystem.delete(slot);
+        showSaveSlots();
+      }
+    });
+  });
+  
+  switchScreen('saveSelect');
+}
+
+/**
+ * Select a save slot
+ * @param {number} slotIndex - Slot index
+ */
+function selectSaveSlot(slotIndex) {
+  gameState.currentSaveSlot = slotIndex;
+  document.getElementById('save-slot-num').textContent = slotIndex + 1;
+  document.getElementById('username-input').value = '';
+  
+  switchScreen('username');
+  setTimeout(() => document.getElementById('username-input').focus(), 100);
+}
+
+/**
+ * Confirm username and start game
+ */
+function confirmUsername() {
+  const username = document.getElementById('username-input').value.trim();
+  if (!username) {
+    alert('Please enter your name!');
+    return;
+  }
+  
+  gameState.playerUsername = username;
+  switchScreen('levelSelect');
+  setupLevelSelect();
+}
+
+/**
+ * Load a saved game
+ * @param {number} slotIndex - Slot index
+ */
+function loadGame(slotIndex) {
+  const save = saveSystem.get(slotIndex);
+  if (!save) {
+    alert('No save data!');
+    return;
+  }
+  
+  gameState.currentSaveSlot = slotIndex;
+  gameState.loadFromSave(save);
+  
+  switchScreen('battle');
+  
+  audioSys.init();
+  setTimeout(() => audioSys.startBGM(), 1000);
+  
+  if (renderer) renderer.resize();
+  setupTowers();
+  startWave();
+  gameState.lastTime = performance.now();
+  
+  updateHUD();
+  updateComboUI();
+  
+  if (gameLoop) gameLoop.start();
+}
+
+/**
+ * Setup level select screen
+ */
+function setupLevelSelect() {
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  
+  LEVELS.forEach(level => {
+    const card = document.createElement('div');
+    card.className = 'level-card';
+    card.innerHTML = `
+      <div class="level-icon">${level.icon}</div>
+      <div class="level-name">${level.name}</div>
+      <div class="level-desc">${level.desc}</div>
+    `;
+    card.style.borderColor = level.color;
+    card.addEventListener('click', () => startLevel(level.id));
+    grid.appendChild(card);
+  });
+}
+
+/**
+ * Escape HTML for safe display
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Export for module system
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { 
+    getUIElements, switchScreen, updateHUD, updateComboUI, 
+    showWaveNotification, showBossHealth, updateBossHealth, 
+    hideBossHealth, showComboText, showAchievement, createScorePopup,
+    toggleSound, togglePause, startLevel, startWave, completeWave,
+    damageStation, gameOver, restartGame, saveGame, showSaveSlots,
+    selectSaveSlot, confirmUsername, loadGame, setupLevelSelect, escapeHtml
+  };
+}
