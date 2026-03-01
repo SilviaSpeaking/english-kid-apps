@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#0a0a1a"/>
+  <radialGradient id="nebulaGrad" cx="50%" cy="50%">
+    <stop offset="0%" style="stop-color:#1a1a3e;stop-opacity:1" />
+    <stop offset="100%" style="stop-color:#0a0a1a;stop-opacity:1" />
+  </radialGradient>
+  <rect width="1280" height="720" fill="url(#nebulaGrad)"/>
+  <circle cx="200" cy="150" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="450" cy="100" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="700" cy="200" r="2.5" fill="#ffffff" opacity="0.7"/>
+  <circle cx="900" cy="120" r="2" fill="#ffffff" opacity="0.5"/>
+  <circle cx="1100" cy="180" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="150" cy="400" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="500" cy="550" r="2.5" fill="#ffffff" opacity="0.7"/>
+  <circle cx="800" cy="600" r="2" fill="#ffffff" opacity="0.5"/>
+  <circle cx="1050" cy="500" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="300" cy="300" r="1.5" fill="#4a9eff" opacity="0.6"/>
+  <circle cx="600" cy="400" r="2" fill="#4aff6a" opacity="0.5"/>
+  <circle cx="950" cy="350" r="1.5" fill="#ffaa4a" opacity="0.6"/>
+  <ellipse cx="640" cy="360" rx="400" ry="200" fill="#4a9eff" opacity="0.05"/>
+</svg>

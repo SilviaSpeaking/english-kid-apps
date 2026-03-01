@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Galactic Word Defenders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      font-family: 'Nunito', sans-serif;
+      overflow: hidden;
+      touch-action: none;
+    }
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #ui-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    #ui-overlay > * { pointer-events: auto; }
+    .question-panel {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(90vw, 800px);
+      background: linear-gradient(180deg, #1a1a3e 0%, #0d0d2b 100%);
+      border: 4px solid #4a9eff;
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
+      box-shadow: 0 -10px 40px rgba(74, 158, 255, 0.4);
+    }
+    .question-text {
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .question-image {
+      text-align: center;
+      margin-bottom: 15px;
+      min-height: 50px;
+    }
+    .answers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    .answer-btn {
+      background: linear-gradient(180deg, #4a9eff 0%, #2a5fbf 100%);
+      border: 3px solid #7ab8ff;
+      border-radius: 15px;
+      padding: 20px 15px;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .answer-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(180deg, #5aafff 0%, #3a6fcf 100%);
+    }
+    .answer-btn:active { transform: scale(0.95); }
+    .answer-btn.correct {
+      background: linear-gradient(180deg, #4aff6a 0%, #2abf4a 100%);
+      border-color: #7aff9a;
+      animation: pulse 0.3s ease;
+    }
+    .answer-btn.wrong {
+      background: linear-gradient(180deg, #ff4a4a 0%, #bf2a2a 100%);
+      border-color: #ff7a7a;
+      animation: shake 0.3s ease;
+    }
+    .timer-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4aff6a, #ffaa4a);
+      transition: width 0.1s linear;
+    }
+    .hint-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: #ffaa4a;
+      border: none;
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .hint-btn.available {
+      opacity: 1;
+      animation: hintGlow 1s infinite;
+    }
+    .hidden { display: none !important; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    @keyframes hintGlow {
+      0%, 100% { box-shadow: 0 0 10px #ffaa4a; }
+      50% { box-shadow: 0 0 25px #ffaa4a; }
+    }
+    #pause-btn {
+      position: absolute;
+      top: 15px; right: 15px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid #fff;
+      border-radius: 10px;
+      width: 50px; height: 50px;
+      font-size: 24px;
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    #hud {
+      position: absolute;
+      top: 15px; left: 15px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    #hud span { margin-right: 20px; }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+  <div id="ui-overlay">
+    <button id="pause-btn" class="hidden">⏸</button>
+    <div id="hud" class="hidden">
+      <span>❤️ <span id="lives-display">3</span></span>
+      <span>⭐ <span id="score-display">0</span></span>
+      <span>🪙 <span id="coins-display">0</span></span>
+    </div>
+    <div id="question-panel" class="question-panel hidden">
+      <button id="hint-btn" class="hint-btn">💡</button>
+      <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+      <div class="question-image" id="question-image"></div>
+      <div class="question-text" id="question-text"></div>
+      <div class="answers-grid" id="answers-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const receptionPhase2Letters = [
+      { id: "rec_ph2_001", question: { text: "What sound does the letter 'm' make?" }, answers: [{ text: "mmm", correct: true }, { text: "nnn", correct: false }, { text: "bbb", correct: false }, { text: "sss", correct: false }], hint: { text: "Think of the word 'mummy'" } },
+      { id: "rec_ph2_002", question: { text: "What sound does the letter 'a' make?" }, answers: [{ text: "aaa", correct: true }, { text: "eee", correct: false }, { text: "iii", correct: false }, { text: "ooo", correct: false }], hint: { text: "Open wide like at the doctor" } },
+      { id: "rec_ph2_003", question: { text: "What sound does the letter 't' make?" }, answers: [{ text: "ttt", correct: true }, { text: "ddd", correct: false }, { text: "bbb", correct: false }, { text: "ggg", correct: false }], hint: { text: "Like a ticking clock" } },
+      { id: "rec_ph2_004", question: { text: "What sound does the letter 's' make?" }, answers: [{ text: "sss", correct: true }, { text: "zzz", correct: false }, { text: "shh", correct: false }, { text: "chh", correct: false }], hint: { text: "Like a sneaky snake" } },
+      { id: "rec_ph2_005", question: { text: "What sound does the letter 'p' make?" }, answers: [{ text: "ppp", correct: true }, { text: "bbb", correct: false }, { text: "ttt", correct: false }, { text: "ddd", correct: false }], hint: { text: "Like blowing out candles" } },
+      { id: "rec_ph2_006", question: { text: "What sound does the letter 'n' make?" }, answers: [{ text: "nnn", correct: true }, { text: "mmm", correct: false }, { text: "ngg", correct: false }, { text: "hhh", correct: false }], hint: { text: "Think 'no' or 'now'" } },
+      { id: "rec_ph2_007", question: { text: "What sound does the letter 'i' make?" }, answers: [{ text: "iii", correct: true }, { text: "eee", correct: false }, { text: "aaa", correct: false }, { text: "ooo", correct: false }], hint: { text: "Like a little insect" } },
+      { id: "rec_ph2_008", question: { text: "What sound does the letter 'd' make?" }, answers: [{ text: "ddd", correct: true }, { text: "bbb", correct: false }, { text: "ttt", correct: false }, { text: "ggg", correct: false }], hint: { text: "Think of a drum" } },
+      { id: "rec_ph2_009", question: { text: "What sound does the letter 'g' make?" }, answers: [{ text: "ggg", correct: true }, { text: "jjj", correct: false }, { text: "ddd", correct: false }, { text: "ccc", correct: false }], hint: { text: "Think 'go' or 'got'" } },
+      { id: "rec_ph2_010", question: { text: "What sound does the letter 'o' make?" }, answers: [{ text: "ooo", correct: true }, { text: "aaa", correct: false }, { text: "uuu", correct: false }, { text: "eee", correct: false }], hint: { text: "Make your mouth round" } },
+      { id: "rec_ph2_011", question: { text: "What sound does the letter 'c' make?" }, answers: [{ text: "ccc", correct: true }, { text: "kkk", correct: false }, { text: "sss", correct: false }, { text: "chh", correct: false }], hint: { text: "Think of a cat" } },
+      { id: "rec_ph2_012", question: { text: "What sound does the letter 'k' make?" }, answers: [{ text: "kkk", correct: true }, { text: "ccc", correct: false }, { text: "ggg", correct: false }, { text: "sss", correct: false }], hint: { text: "Think 'kite' or 'king'" } },
+      { id: "rec_ph2_013", question: { text: "What sound does 'ck' make?" }, answers: [{ text: "kkk", correct: true }, { text: "ccc", correct: false }, { text: "chh", correct: false }, { text: "sss", correct: false }], hint: { text: "You hear this at the end of 'duck'" } },
+      { id: "rec_ph2_014", question: { text: "What sound does the letter 'e' make?" }, answers: [{ text: "eee", correct: true }, { text: "aaa", correct: false }, { text: "iii", correct: false }, { text: "ooo", correct: false }], hint: { text: "Like you're ready to run" } },
+      { id: "rec_ph2_015", question: { text: "What sound does the letter 'u' make?" }, answers: [{ text: "uuu", correct: true }, { text: "aaa", correct: false }, { text: "iii", correct: false }, { text: "eee", correct: false }], hint: { text: "Like you're stuck" } },
+      { id: "rec_ph2_016", question: { text: "What sound does the letter 'r' make?" }, answers: [{ text: "rrr", correct: true }, { text: "nnn", correct: false }, { text: "mmm", correct: false }, { text: "hhh", correct: false }], hint: { text: "Like a growling dog" } },
+      { id: "rec_ph2_017", question: { text: "What sound does the letter 'h' make?" }, answers: [{ text: "hhh", correct: true }, { text: "rrr", correct: false }, { text: "nnn", correct: false }, { text: "mmm", correct: false }], hint: { text: "Like breathing on glasses" } },
+      { id: "rec_ph2_018", question: { text: "What sound does the letter 'b' make?" }, answers: [{ text: "bbb", correct: true }, { text: "ddd", correct: false }, { text: "ppp", correct: false }, { text: "ggg", correct: false }], hint: { text: "Think of a bouncing ball" } },
+      { id: "rec_ph2_019", question: { text: "What sound does the letter 'f' make?" }, answers: [{ text: "fff", correct: true }, { text: "vvv", correct: false }, { text: "sss", correct: false }, { text: "shh", correct: false }], hint: { text: "Like the wind" } },
+      { id: "rec_ph2_020", question: { text: "What sound does the letter 'l' make?" }, answers: [{ text: "lll", correct: true }, { text: "nnn", correct: false }, { text: "mmm", correct: false }, { text: "rrr", correct: false }], hint: { text: "Think 'lollipop'" } }
+    ];
+
+    class BootScene extends Phaser.Scene {
+      constructor() { super('BootScene'); }
+      preload() {
+        const progressBar = this.add.graphics();
+        const progressBox = this.add.graphics();
+        progressBox.fillStyle(0x222222, 0.8);
+        progressBox.fillRect(540, 340, 200, 50);
+        const loadingText = this.add.text(640, 320, 'Loading...', { font: '28px Nunito', color: '#ffffff' }).setOrigin(0.5);
+        this.load.on('progress', (value) => {
+          progressBar.clear();
+          progressBar.fillStyle(0x4a9eff, 1);
+          progressBar.fillRect(550, 350, 180 * value, 30);
+        });
+        this.load.on('complete', () => { progressBar.destroy(); progressBox.destroy(); loadingText.destroy(); });
+        this.load.svg('station', 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><circle cx="75" cy="75" r="60" fill="#4a4a6a" stroke="#6a6a8a" stroke-width="4"/><circle cx="75" cy="75" r="40" fill="#2a2a4a"/><circle cx="55" cy="65" r="8" fill="#4aff6a"/><circle cx="95" cy="65" r="8" fill="#4aff6a"/><ellipse cx="75" cy="90" rx="20" ry="10" fill="#4aff6a"/><circle cx="75" cy="40" r="15" fill="#4a9eff" opacity="0.6"/><rect x="30" y="20" width="10" height="30" fill="#8a8aaa" rx="5"/><rect x="110" y="20" width="10" height="30" fill="#8a8aaa" rx="5"/></svg>`));
+        this.load.svg('alien_wobbly', 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="55" rx="35" ry="30" fill="#4aff6a"/><ellipse cx="50" cy="50" rx="30" ry="25" fill="#6aff8a"/><circle cx="35" cy="45" r="10" fill="#ffffff"/><circle cx="65" cy="45" r="10" fill="#ffffff"/><circle cx="35" cy="45" r="4" fill="#2a2a4a"/><circle cx="65" cy="45" r="4" fill="#2a2a4a"/><ellipse cx="50" cy="60" rx="8" ry="5" fill="#ff6a6a"/><path d="M 30 30 Q 25 20 30 15" stroke="#6aff8a" stroke-width="3" fill="none"/><path d="M 70 30 Q 75 20 70 15" stroke="#6aff8a" stroke-width="3" fill="none"/><circle cx="30" cy="15" r="4" fill="#ff6a6a"/><circle cx="70" cy="15" r="4" fill="#ff6a6a"/></svg>`));
+        this.load.svg('tower_phonics', 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="30" y="40" width="40" height="40" fill="#4a9eff" rx="5"/><rect x="35" y="45" width="30" height="30" fill="#6ab8ff" rx="3"/><circle cx="50" cy="60" r="15" fill="#2a5fbf" opacity="0.5"/><rect x="45" y="30" width="10" height="15" fill="#4a9eff"/><circle cx="50" cy="25" r="8" fill="#ff6a6a"/><rect x="25" y="50" width="10" height="20" fill="#4a9eff" rx="3"/><rect x="65" y="50" width="10" height="20" fill="#4a9eff" rx="3"/></svg>`));
+        this.load.svg('projectile_letter', 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="#ffaa4a"/><circle cx="25" cy="25" r="15" fill="#ffcc4a"/><text x="25" y="32" text-anchor="middle" fill="#2a2a4a" font-size="20" font-weight="bold">A</text></svg>`));
+      }
+      create() { this.scene.start('TitleScene'); }
+    }
+
+    class TitleScene extends Phaser.Scene {
+      constructor() { super('TitleScene'); }
+      create() {
+        const { width, height } = this.scale;
+        this.add.rectangle(width / 2, height / 2, width, height, 0x0a0a1a);
+        const stars = this.add.graphics();
+        for (let i = 0; i < 100; i++) {
+          stars.fillStyle(0xffffff, Phaser.Math.FloatBetween(0.3, 1));
+          stars.fillCircle(Phaser.Math.Between(0, width), Phaser.Math.Between(0, height), Phaser.Math.Between(1, 3));
+        }
+        const title = this.add.text(width / 2, height / 2 - 100, 'GALACTIC WORD\nDEFENDERS', { font: 'bold 64px Nunito', color: '#4a9eff', align: 'center', stroke: '#ffffff', strokeThickness: 8 }).setOrigin(0.5);
+        this.tweens.add({ targets: title, scaleX: 1.05, scaleY: 1.05, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        this.add.text(width / 2, height / 2 + 20, 'An Educational Adventure', { font: '28px Nunito', color: '#aaaaff' }).setOrigin(0.5);
+        const playButton = this.add.text(width / 2, height / 2 + 150, '🚀 PLAY GAME', { font: 'bold 36px Nunito', color: '#ffffff', backgroundColor: '#4a9eff', padding: { x: 40, y: 20 }, borderRadius: 15 }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        playButton.on('pointerover', () => playButton.setStyle({ backgroundColor: '#5aafff' }));
+        playButton.on('pointerout', () => playButton.setStyle({ backgroundColor: '#4a9eff' }));
+        playButton.on('pointerdown', () => { this.scene.start('BattleScene'); });
+      }
+    }
+
+    class BattleScene extends Phaser.Scene {
+      constructor() { super('BattleScene'); }
+      create() {
+        this.questions = receptionPhase2Letters;
+        this.currentQuestion = null;
+        this.isAnswering = false;
+        this.lives = 3;
+        this.score = 0;
+        this.coins = 0;
+        this.wave = 1;
+        this.aliensRemaining = 0;
+        this.waveInProgress = false;
+        this.setupBackground();
+        this.setupStation();
+        this.setupPath();
+        this.setupTowers();
+        this.setupUI();
+        this.setupGroups();
+        this.startWave();
+      }
+      setupBackground() {
+        const bg = this.add.tileSprite(640, 360, 1280, 720, 'station');
+        bg.setTint(0x1a1a3e);
+        this.tweens.add({ targets: bg, tilePositionX: 1280, duration: 60000, repeat: -1, ease: 'Linear' });
+      }
+      setupStation() {
+        this.station = this.add.sprite(1150, 360, 'station');
+        this.station.setDisplaySize(150, 150);
+        this.stationHealth = 100;
+        const healthBar = this.add.rectangle(1080, 280, 140, 10, 0x333333);
+        this.stationHealthBar = this.add.rectangle(1080, 280, 140, 10, 0x4aff6a);
+      }
+      setupPath() {
+        this.path = this.add.graphics();
+        this.path.lineStyle(8, 0x4a4a6a, 0.5);
+        this.path.beginPath();
+        this.path.moveTo(0, 360);
+        this.path.lineTo(200, 360);
+        this.path.lineTo(200, 200);
+        this.path.lineTo(400, 200);
+        this.path.lineTo(400, 500);
+        this.path.lineTo(700, 500);
+        this.path.lineTo(700, 300);
+        this.path.lineTo(950, 300);
+        this.path.lineTo(950, 360);
+        this.path.lineTo(1100, 360);
+        this.path.strokePath();
+        this.pathPoints = [{ x: 0, y: 360 }, { x: 200, y: 360 }, { x: 200, y: 200 }, { x: 400, y: 200 }, { x: 400, y: 500 }, { x: 700, y: 500 }, { x: 700, y: 300 }, { x: 950, y: 300 }, { x: 950, y: 360 }, { x: 1100, y: 360 }];
+      }
+      setupTowers() {
+        this.towers = [];
+        const positions = [{ x: 200, y: 280 }, { x: 400, y: 280 }, { x: 700, y: 380 }];
+        positions.forEach((pos, i) => {
+          const tower = this.add.sprite(pos.x, pos.y, 'tower_phonics');
+          tower.setDisplaySize(80, 80);
+          tower.id = i;
+          tower.range = 200;
+          tower.fireRate = 1000;
+          tower.lastFired = 0;
+          this.towers.push(tower);
+        });
+      }
+      setupUI() {
+        document.getElementById('pause-btn').classList.remove('hidden');
+        document.getElementById('hud').classList.remove('hidden');
+        this.updateHUD();
+        document.getElementById('pause-btn').onclick = () => { this.scene.pause(); alert('Game Paused'); this.scene.resume(); };
+      }
+      setupGroups() {
+        this.aliens = this.physics.add.group();
+        this.projectiles = this.physics.add.group();
+      }
+      startWave() {
+        this.waveInProgress = true;
+        this.aliensRemaining = 5 + this.wave * 2;
+        this.spawnTimer = 0;
+        this.spawnInterval = 2000;
+        this.showWaveNotification();
+      }
+      showWaveNotification() {
+        const notification = this.add.text(640, 200, `WAVE ${this.wave}`, { font: 'bold 72px Nunito', color: '#4a9eff', stroke: '#ffffff', strokeThickness: 6 }).setOrigin(0.5);
+        this.tweens.add({ targets: notification, alpha: 0, y: 150, duration: 2000, delay: 1000, onComplete: () => notification.destroy() });
+      }
+      spawnAlien() {
+        const alien = this.physics.add.sprite(50, 360, 'alien_wobbly');
+        alien.setDisplaySize(60, 60);
+        alien.hp = 1;
+        alien.pathIndex = 0;
+        alien.speed = 80 + (this.wave * 10);
+        alien.setTint(Phaser.Math.Between(0, 0xffffff));
+        this.aliens.add(alien);
+      }
+      update(time, delta) {
+        if (!this.waveInProgress) return;
+        this.spawnTimer += delta;
+        if (this.spawnTimer >= this.spawnInterval && this.aliensRemaining > 0) {
+          this.spawnAlien();
+          this.spawnTimer = 0;
+          this.aliensRemaining--;
+        }
+        this.towers.forEach(tower => {
+          if (time >= tower.lastFired + tower.fireRate && !this.isAnswering) {
+            const target = this.findClosestAlien(tower);
+            if (target) { this.fireTower(tower, target); tower.lastFired = time; }
+          }
+        });
+        this.aliens.getChildren().forEach(alien => {
+          this.moveAlien(alien, delta);
+          if (alien.x >= 1100) { alien.destroy(); this.damageStation(10); }
+        });
+        this.projectiles.getChildren().forEach(proj => {
+          if (proj.x > 1280 || proj.y > 720 || proj.x < 0 || proj.y < 0) proj.destroy();
+        });
+        if (this.aliens.countActive() === 0 && this.aliensRemaining === 0) this.completeWave();
+      }
+      findClosestAlien(tower) {
+        let closest = null;
+        let minDist = tower.range;
+        this.aliens.getChildren().forEach(alien => {
+          const dist = Phaser.Math.Distance.Between(tower.x, tower.y, alien.x, alien.y);
+          if (dist < minDist) { minDist = dist; closest = alien; }
+        });
+        return closest;
+      }
+      fireTower(tower, target) {
+        this.currentQuestion = this.questions[Phaser.Math.Between(0, this.questions.length - 1)];
+        this.isAnswering = true;
+        this.showQuestionPanel(this.currentQuestion, () => {
+          if (this.lastAnswerCorrect) {
+            this.score += 10;
+            this.coins += 1;
+            const projectile = this.projectiles.create(tower.x, tower.y, 'projectile_letter');
+            projectile.setDisplaySize(30, 30);
+            this.physics.moveTo(projectile, target.x, target.y, 500);
+            this.time.delayedCall(200, () => {
+              target.hp--;
+              if (target.hp <= 0) this.destroyAlien(target);
+            });
+          }
+          this.isAnswering = false;
+          this.updateHUD();
+        });
+      }
+      showQuestionPanel(question, callback) {
+        const panel = document.getElementById('question-panel');
+        const textEl = document.getElementById('question-text');
+        const imageEl = document.getElementById('question-image');
+        const answersEl = document.getElementById('answers-grid');
+        const timerFill = document.getElementById('timer-fill');
+        const hintBtn = document.getElementById('hint-btn');
+        panel.classList.remove('hidden');
+        textEl.textContent = question.question.text;
+        imageEl.innerHTML = '';
+        answersEl.innerHTML = '';
+        question.answers.forEach((answer) => {
+          const btn = document.createElement('button');
+          btn.className = 'answer-btn';
+          btn.textContent = answer.text;
+          btn.onclick = () => this.handleAnswer(answer, btn, callback);
+          answersEl.appendChild(btn);
+        });
+        hintBtn.classList.remove('available');
+        let timeLeft = 100;
+        this.questionTimerInterval = setInterval(() => {
+          timeLeft -= 2;
+          timerFill.style.width = timeLeft + '%';
+          if (timeLeft <= 0 && this.isAnswering) {
+            clearInterval(this.questionTimerInterval);
+            this.lastAnswerCorrect = false;
+            panel.classList.add('hidden');
+            callback();
+          }
+        }, 20);
+      }
+      handleAnswer(answer, btn, callback) {
+        clearInterval(this.questionTimerInterval);
+        const buttons = document.querySelectorAll('.answer-btn');
+        buttons.forEach(b => b.disabled = true);
+        if (answer.correct) {
+          btn.classList.add('correct');
+          this.lastAnswerCorrect = true;
+        } else {
+          btn.classList.add('wrong');
+          this.lastAnswerCorrect = false;
+          question.answers.forEach((a, i) => { if (a.correct) buttons[i].classList.add('correct'); });
+        }
+        const hintBtn = document.getElementById('hint-btn');
+        hintBtn.classList.add('available');
+        hintBtn.onclick = () => { if (hintBtn.classList.contains('available')) alert('Hint: ' + question.hint.text); };
+        setTimeout(() => {
+          document.getElementById('question-panel').classList.add('hidden');
+          callback();
+        }, 1000);
+      }
+      moveAlien(alien, delta) {
+        const target = this.pathPoints[alien.pathIndex + 1];
+        if (!target) return;
+        const angle = Phaser.Math.Angle.Between(alien.x, alien.y, target.x, target.y);
+        alien.x += Math.cos(angle) * alien.speed * (delta / 1000);
+        alien.y += Math.sin(angle) * alien.speed * (delta / 1000);
+        if (Phaser.Math.Distance.Between(alien.x, alien.y, target.x, target.y) < 10) alien.pathIndex++;
+        alien.setAngle(Phaser.Math.RadToDeg(angle) - 90);
+      }
+      destroyAlien(alien) {
+        alien.destroy();
+      }
+      damageStation(amount) {
+        this.stationHealth -= amount;
+        const healthPercent = this.stationHealth / 100;
+        this.stationHealthBar.width = 140 * healthPercent;
+        if (healthPercent < 0.3) this.stationHealthBar.setFillStyle(0xff4a4a);
+        else if (healthPercent < 0.6) this.stationHealthBar.setFillStyle(0xffaa4a);
+        this.lives--;
+        this.updateHUD();
+        if (this.stationHealth <= 0) this.gameOver();
+      }
+      completeWave() {
+        this.waveInProgress = false;
+        this.wave++;
+        this.coins += this.lives * 5;
+        this.updateHUD();
+        setTimeout(() => this.startWave(), 2000);
+      }
+      gameOver() {
+        this.waveInProgress = false;
+        document.getElementById('question-panel').classList.add('hidden');
+        const gameOverText = this.add.text(640, 360, 'GAME OVER\nWave: ' + this.wave, { font: 'bold 64px Nunito', color: '#ff4a4a', align: 'center', stroke: '#ffffff', strokeThickness: 6 }).setOrigin(0.5);
+        const restartBtn = this.add.text(640, 500, '🔄 PLAY AGAIN', { font: 'bold 36px Nunito', color: '#ffffff', backgroundColor: '#4a9eff', padding: { x: 30, y: 15 }, borderRadius: 10 }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        restartBtn.on('pointerdown', () => { document.getElementById('question-panel').classList.add('hidden'); this.scene.restart(); });
+        try { localStorage.setItem('galacticWordDefenders', JSON.stringify({ wave: this.wave, score: this.score, coins: this.coins })); } catch(e) {}
+      }
+      updateHUD() {
+        document.getElementById('lives-display').textContent = this.lives;
+        document.getElementById('score-display').textContent = this.score;
+        document.getElementById('coins-display').textContent = this.coins;
+      }
+      shutdown() {
+        document.getElementById('question-panel').classList.add('hidden');
+        document.getElementById('pause-btn').classList.add('hidden');
+        document.getElementById('hud').classList.add('hidden');
+        clearInterval(this.questionTimerInterval);
+      }
+    }
+
+    const config = {
+      type: Phaser.AUTO,
+      parent: 'game-container',
+      width: 1280,
+      height: 720,
+      backgroundColor: '#0a0a1a',
+      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scene: [BootScene, TitleScene, BattleScene],
+      physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } }
+    };
+
+    const game = new Phaser.Game(config);
+  </script>
+</body>
+</html>
