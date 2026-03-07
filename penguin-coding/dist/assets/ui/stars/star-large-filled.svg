@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-<defs><linearGradient id="starGL" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFE44D"/><stop offset="100%" stop-color="#FFB700"/></linearGradient>
-<filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feComposite in="SourceGraphic" in2="blur"/></filter></defs>
-<polygon points="32,4 40,24 62,24 44,38 50,60 32,46 14,60 20,38 2,24 24,24" fill="url(#starGL)" stroke="#D4960A" stroke-width="1.5" filter="url(#glow)"/>
-<polygon points="32,10 38,24 52,24 40,34 32,24 24,24" fill="white" opacity="0.2"/>
-</svg>
