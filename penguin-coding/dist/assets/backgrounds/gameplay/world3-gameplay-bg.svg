@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="600" viewBox="0 0 1280 600">
+    <defs><linearGradient id="sky3" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#0F0F3A"/><stop offset="100%" stop-color="#1B1464"/></linearGradient></defs>
+    <rect width="1280" height="600" fill="url(#sky3)"/>
+    <path d="M0,100 Q320,50 640,120 Q960,180 1280,80" fill="none" stroke="#4ECDC4" stroke-width="8" opacity="0.3"/>
+    <path d="M0,130 Q320,80 640,150 Q960,210 1280,110" fill="none" stroke="#9F7AEA" stroke-width="6" opacity="0.2"/>
+    <path d="M0,160 Q320,110 640,180 Q960,240 1280,140" fill="none" stroke="#FF69B4" stroke-width="4" opacity="0.15"/>
+    <circle cx="100" cy="80" r="1.5" fill="white" opacity="0.7"/>
+    <circle cx="300" cy="120" r="1" fill="white" opacity="0.5"/>
+    <circle cx="500" cy="60" r="1.2" fill="#FFD700" opacity="0.6"/>
+    <circle cx="700" cy="150" r="1" fill="white" opacity="0.4"/>
+    <circle cx="1000" cy="90" r="1.5" fill="white" opacity="0.7"/>
+    <path d="M200,500 L280,420 L360,500" fill="#2D1B69" opacity="0.5"/>
+    <path d="M600,480 L700,380 L800,480" fill="#1B1050" opacity="0.4"/>
+    </svg>

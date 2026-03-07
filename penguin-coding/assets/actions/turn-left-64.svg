@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="10" fill="#9F7AEA"/>
+  <rect x="2" y="2" width="60" height="60" rx="8" fill="#9F7AEA" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <rect x="2" y="2" width="60" height="30" rx="8" fill="white" opacity="0.1"/>
+
+  <!-- Penguin face - looking LEFT -->
+  <!-- Head (dark circle) -->
+  <circle cx="32" cy="28" r="16" fill="#2D3748"/>
+  <!-- White belly/face patch -->
+  <ellipse cx="34" cy="30" rx="10" ry="12" fill="white"/>
+  <!-- Left eye (bigger, facing left) -->
+  <circle cx="24" cy="24" r="3.5" fill="white"/>
+  <circle cx="23" cy="24" r="2" fill="#1A202C"/>
+  <circle cx="22.5" cy="23.5" r="0.7" fill="white"/>
+  <!-- Right eye (smaller, further side) -->
+  <circle cx="34" cy="25" r="2.5" fill="white"/>
+  <circle cx="33.5" cy="25" r="1.5" fill="#1A202C"/>
+  <!-- Beak pointing LEFT -->
+  <polygon points="14,27 22,24 22,30" fill="#F6AD55"/>
+
+  <!-- Left arrow indicator -->
+  <path d="M14,52 L6,52" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="8,48 2,52 8,56" fill="white"/>
+  <!-- "L" label -->
+  <text x="48" y="56" fill="white" font-family="Arial,sans-serif" font-weight="bold" font-size="14" text-anchor="middle">L</text>
+</svg>

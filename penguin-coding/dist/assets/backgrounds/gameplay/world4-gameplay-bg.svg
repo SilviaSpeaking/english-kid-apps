@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="600" viewBox="0 0 1280 600">
+    <defs><linearGradient id="sky4" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#C4D4E0"/><stop offset="100%" stop-color="#87CEEB"/></linearGradient></defs>
+    <rect width="1280" height="600" fill="url(#sky4)"/>
+    <path d="M0,350 Q120,320 240,350 Q360,380 480,340 Q600,300 720,350 Q840,380 960,330 Q1080,290 1200,350 L1280,600 L0,600 Z" fill="#1A4A6A" opacity="0.3"/>
+    <path d="M200,300 L260,250 L320,310 L300,300 Z" fill="#E8F0F8" opacity="0.6"/>
+    <path d="M700,280 L780,200 L860,290 L830,280 Z" fill="#D4ECF8" opacity="0.5"/>
+    <ellipse cx="400" cy="250" rx="60" ry="15" fill="white" opacity="0.2"/>
+    </svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+<polygon points="20,70 30,55 25,75" fill="#5ABED4" opacity="0.5" transform="rotate(-15,25,65)"/>
+<polygon points="60,60 75,50 70,70" fill="#7DD4E8" opacity="0.4" transform="rotate(20,68,60)"/>
+<polygon points="35,30 48,15 55,35" fill="#5ABED4" opacity="0.3" transform="rotate(10,48,25)"/>
+<polygon points="40,75 55,80 45,88" fill="#7DD4E8" opacity="0.4"/>
+<circle cx="48" cy="48" r="25" fill="white" opacity="0.5"/>
+<circle cx="35" cy="35" r="3" fill="#4ECDC4" opacity="0.6"/>
+<circle cx="60" cy="55" r="2" fill="#4ECDC4" opacity="0.5"/>
+</svg>
